@@ -5,7 +5,7 @@ pubDate: 2026-09-02
 authorSlug: "rohan-mehta"
 category: "Product Design"
 tags: ["user retention", "notifications", "digital wellbeing"]
-image: "../sam/images/posts/silent-apps.jpg"
+image: "/sam/images/posts/test.jpg"
 imageAlt: "A minimalist mobile interface showing a silent notification bell"
 ---
 
