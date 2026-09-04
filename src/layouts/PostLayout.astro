@@ -13,12 +13,14 @@ const { post } = Astro.props;
 const { title, description, pubDate, updatedDate, authorSlug, category, tags, image, imageAlt } = post.data;
 const author = getAuthorBySlug(authorSlug);
 
+// Reading time calculation
 const wordsPerMinute = 200;
-const wordCount = post.body.split(/\s+/g).length;
+const wordCount = post.body ? post.body.split(/\s+/g).length : 0;
 const readingTime = Math.max(1, Math.round(wordCount / wordsPerMinute));
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
+// Related Posts
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 const relatedPosts = allPosts
   .filter((p) => p.slug !== post.slug && p.data.category === category)
@@ -37,33 +39,42 @@ const relatedPosts = allPosts
 >
   <slot name="head" slot="head" />
 
-  <!-- Reading Progress Bar (Green Gradient) -->
-  <div id="reading-progress" class="reading-progress-bar"></div>
+  <!-- Smooth Reading Progress Bar -->
+  <div id="reading-progress" class="reading-progress-bar" aria-hidden="true"></div>
 
   <div class="blog-wrapper">
     <div class="container">
-      <nav class="breadcrumb-container" aria-label="Breadcrumb">
-        <Breadcrumb items={[{ label: 'Blog', href: '/sam/blog' }, { label: title }]} />
+      
+      <!-- Compact Breadcrumb -->
+      <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+        <Breadcrumb items={[{ label: 'Blog', href: '/sam/blog' }, { label: category, href: `/sam/blog?category=${encodeURIComponent(category)}` }, { label: title }]} />
       </nav>
 
+      <!-- Main Layout Grid (Content + Sticky Sidebar) -->
       <div class="page-layout">
-        <!-- Main Content Column -->
+        
+        <!-- Main Article Content Column -->
         <main class="content-col">
           <article class="article-wrapper">
+            
             <!-- Article Header -->
             <header class="article-header">
-              <div class="header-badges">
-                <span class="category-badge">{category}</span>
+              <div class="header-pills">
+                <a href={`/sam/blog?category=${encodeURIComponent(category)}`} class="category-badge">
+                  {category}
+                </a>
                 <span class="read-time-pill">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                   {readingTime} min read
                 </span>
               </div>
 
+              <!-- Main Post Title -->
               <h1 class="article-title">{title}</h1>
 
               {description && <p class="article-subtitle">{description}</p>}
 
+              <!-- Author & Date Meta Card -->
               <div class="article-meta-card">
                 <div class="author-meta-info">
                   <div class="author-avatar-placeholder">
@@ -85,31 +96,31 @@ const relatedPosts = allPosts
                   </div>
                 </div>
 
-                <!-- Quick Share Controls -->
+                <!-- Fast Social Sharing Controls -->
                 <div class="quick-share">
                   <button class="share-btn copy-btn" id="copyLinkBtn" title="Copy article link" aria-label="Copy Link">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                    <span class="tooltip" id="copyTooltip">Copied!</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    <span class="tooltip" id="copyTooltip">Link Copied!</span>
                   </button>
                   <a href={`https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${Astro.url}`} class="share-btn" aria-label="Share on X" target="_blank" rel="noopener noreferrer">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                   </a>
                   <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`} class="share-btn" aria-label="Share on LinkedIn" target="_blank" rel="noopener noreferrer">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.64 1.64 0 1 0 0-3.28 1.64 1.64 0 0 0 0 3.28m1.4 9.74V10.13H5.06v8.37h2.8z"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.64 1.64 0 1 0 0-3.28 1.64 1.64 0 0 0 0 3.28m1.4 9.74V10.13H5.06v8.37h2.8z"/></svg>
                   </a>
                 </div>
               </div>
             </header>
 
-            <!-- Featured Image -->
+            <!-- Featured Hero Image -->
             {image && (
-              <figure class="featured-media-container">
-                <img src={image} alt={imageAlt ?? title} width="1100" height="580" loading="eager" />
+              <figure class="featured-media-box">
+                <img src={image} alt={imageAlt ?? title} width="960" height="500" loading="eager" decoding="async" />
                 {imageAlt && <figcaption>{imageAlt}</figcaption>}
               </figure>
             )}
 
-            <!-- Post Content -->
+            <!-- Post Content Slot with Modern Styling -->
             <div class="article-body">
               <slot />
             </div>
@@ -117,7 +128,7 @@ const relatedPosts = allPosts
             <!-- Tags Section -->
             {tags && tags.length > 0 && (
               <div class="tags-container">
-                <span class="tags-label">Tags:</span>
+                <span class="tags-label">Related Topics:</span>
                 <div class="tags-list">
                   {tags.map((tag: string) => (
                     <a href={`/sam/blog?tag=${encodeURIComponent(tag)}`} class="tag-pill">
@@ -128,22 +139,23 @@ const relatedPosts = allPosts
               </div>
             )}
 
-            <!-- Green Accent Share Box -->
+            <!-- Engagement & Share Box (Emerald Glow) -->
             <div class="share-box">
               <div class="share-box-content">
-                <h4>Found this insightful?</h4>
-                <p>Help others in your community level up by sharing this guide.</p>
+                <h4>Found this guide valuable?</h4>
+                <p>Share it with your teammates and network to help them scale faster.</p>
               </div>
               <div class="share-box-actions">
                 <a href={`https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${Astro.url}`} class="share-pill share-green" target="_blank" rel="noopener noreferrer">
                   Share on X
                 </a>
                 <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`} class="share-pill share-outline" target="_blank" rel="noopener noreferrer">
-                  LinkedIn
+                  Share on LinkedIn
                 </a>
               </div>
             </div>
 
+            <!-- Author Card -->
             {author && (
               <div class="author-section">
                 <AuthorBio authorSlug={author.slug} />
@@ -151,13 +163,13 @@ const relatedPosts = allPosts
             )}
           </article>
 
-          <!-- Related Posts Section -->
+          <!-- Recommended Posts -->
           {relatedPosts.length > 0 && (
             <section class="related-posts" aria-label="Related posts">
               <div class="section-header">
-                <h2>Recommended Reads</h2>
+                <h2>Recommended Articles</h2>
                 <a href={`/sam/blog?category=${encodeURIComponent(category)}`} class="view-all-link">
-                  View category &rarr;
+                  More in {category} &rarr;
                 </a>
               </div>
               <div class="post-grid">
@@ -165,7 +177,7 @@ const relatedPosts = allPosts
                   <article class="modern-card">
                     {related.data.image && (
                       <a href={`/sam/blog/${related.slug}`} class="card-thumb" tabindex="-1">
-                        <img src={related.data.image} alt="" loading="lazy" width="360" height="200" />
+                        <img src={related.data.image} alt={related.data.title} loading="lazy" width="340" height="180" />
                       </a>
                     )}
                     <div class="card-body">
@@ -182,25 +194,36 @@ const relatedPosts = allPosts
           )}
         </main>
 
-        <!-- Sticky Sidebar -->
-        <aside class="sidebar-col" aria-label="Sidebar">
+        <!-- True Sticky Sidebar -->
+        <aside class="sidebar-col" aria-label="Article Sidebar">
           <div class="sticky-sidebar">
-            <!-- Newsletter Card -->
+            
+            <!-- Table of Contents Widget (Auto-populated by JS) -->
+            <div class="sidebar-widget toc-widget" id="toc-container" style="display: none;">
+              <h3 class="widget-title">
+                <span class="widget-title-icon">📖</span> On this page
+              </h3>
+              <nav id="toc-list" class="toc-list"></nav>
+            </div>
+
+            <!-- Newsletter Signup Widget -->
             <div class="sidebar-widget newsletter-widget">
               <div class="widget-header">
-                <span class="widget-icon">🌱</span>
-                <h3>Stay Ahead</h3>
+                <span class="widget-badge">Free Insights</span>
+                <h3>Level up your engineering & growth</h3>
               </div>
-              <p>Get curated growth strategies and engineering updates every week.</p>
-              <form class="mini-form" onsubmit="event.preventDefault(); alert('Subscribed successfully!');">
-                <input type="email" placeholder="name@domain.com" required />
-                <button type="submit">Join Free</button>
+              <p>Get our top curated tactics, frameworks, and guides delivered directly to your inbox weekly.</p>
+              <form class="mini-form" onsubmit="event.preventDefault(); alert('Thanks for subscribing!');">
+                <input type="email" placeholder="Enter your email" required aria-label="Email address" />
+                <button type="submit">Subscribe Now</button>
               </form>
             </div>
 
-            <!-- Categories Card -->
+            <!-- Categories Widget -->
             <div class="sidebar-widget">
-              <h3 class="widget-title">Categories</h3>
+              <h3 class="widget-title">
+                <span class="widget-title-icon">📂</span> Explore Categories
+              </h3>
               <ul class="clean-category-list">
                 <li><a href="/sam/blog?category=Technology"><span>Technology</span> <span class="badge-arrow">&rarr;</span></a></li>
                 <li><a href="/sam/blog?category=Work+%26+Life"><span>Work &amp; Life</span> <span class="badge-arrow">&rarr;</span></a></li>
@@ -210,13 +233,14 @@ const relatedPosts = allPosts
             </div>
           </div>
         </aside>
+
       </div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
-  // Reading Progress Bar
+  // 1. Reading Progress Bar Handler
   window.addEventListener('scroll', () => {
     const progressBar = document.getElementById('reading-progress');
     const article = document.querySelector('.article-body');
@@ -227,7 +251,7 @@ const relatedPosts = allPosts
       const currentScroll = window.scrollY - articleOffsetTop;
 
       if (currentScroll > 0) {
-        const progress = Math.min(100, Math.max(0, (currentScroll / (totalHeight - windowHeight + 150)) * 100));
+        const progress = Math.min(100, Math.max(0, (currentScroll / (totalHeight - windowHeight + 100)) * 100));
         progressBar.style.width = `${progress}%`;
       } else {
         progressBar.style.width = '0%';
@@ -235,7 +259,7 @@ const relatedPosts = allPosts
     }
   });
 
-  // Quick Copy URL
+  // 2. Quick Copy URL Handler
   const copyBtn = document.getElementById('copyLinkBtn');
   const tooltip = document.getElementById('copyTooltip');
   if (copyBtn && tooltip) {
@@ -249,52 +273,81 @@ const relatedPosts = allPosts
       }
     });
   }
+
+  // 3. Dynamic Table of Contents (TOC) Generator
+  document.addEventListener('DOMContentLoaded', () => {
+    const headings = document.querySelectorAll('.article-body h2, .article-body h3');
+    const tocContainer = document.getElementById('toc-container');
+    const tocList = document.getElementById('toc-list');
+
+    if (headings.length > 1 && tocContainer && tocList) {
+      tocContainer.style.display = 'block';
+      
+      headings.forEach((heading, index) => {
+        let id = heading.id;
+        if (!id) {
+          id = heading.textContent?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `heading-${index}`;
+          heading.id = id;
+        }
+
+        const link = document.createElement('a');
+        link.href = `#${id}`;
+        link.textContent = heading.textContent;
+        link.className = heading.tagName === 'H3' ? 'toc-link toc-h3' : 'toc-link toc-h2';
+        
+        tocList.appendChild(link);
+      });
+    }
+  });
 </script>
 
 <style>
   /* ==========================================================
-     GREENISH THEME VARIABLES & BASE
+     GREENISH MODERN COLOR PALETTE & DESIGN SYSTEM
   ========================================================== */
   :root {
-    --green-primary: #059669;      /* Emerald 600 */
-    --green-primary-hover: #047857;/* Emerald 700 */
-    --green-light: #ecfdf5;        /* Emerald 50 */
-    --green-light-border: #a7f3d0; /* Emerald 200 */
-    --green-dark: #064e3b;         /* Emerald 900 */
-    --text-heading: #0f172a;       /* Slate 900 */
-    --text-body: #334155;          /* Slate 700 */
-    --text-muted: #64748b;         /* Slate 500 */
+    --green-primary: #059669;        /* Deep Emerald */
+    --green-primary-hover: #047857;  /* Emerald 700 */
+    --green-accent: #10b981;         /* Vibrant Emerald */
+    --green-light: #f0fdf4;          /* Soft Mint Wash */
+    --green-light-border: #bbf7d0;   /* Mint Border */
+    --green-dark: #064e3b;           /* Emerald 900 */
+    --text-heading: #0f172a;         /* Deep Slate */
+    --text-body: #334155;            /* Slate 700 */
+    --text-muted: #64748b;           /* Slate 500 */
     --bg-surface: #ffffff;
     --bg-subtle: #f8fafc;
     --border-color: #e2e8f0;
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
   }
 
+  /* Reading Progress Bar */
   .reading-progress-bar {
     position: fixed;
     top: 0;
     left: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #10b981, #059669, #047857);
+    height: 3.5px;
+    background: linear-gradient(90deg, #34d399, #059669, #047857);
     width: 0%;
     z-index: 9999;
-    transition: width 0.08s ease-out;
+    transition: width 0.05s ease-out;
   }
 
   .blog-wrapper {
     background-color: var(--bg-surface);
     color: var(--text-body);
-    padding: 1rem 0 3rem;
+    padding: 0.75rem 0 2.5rem;
   }
 
   .container {
-    max-width: 1140px;
+    max-width: 1160px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 1.25rem;
   }
 
-  .breadcrumb-container {
-    margin-bottom: 1rem;
-    font-size: 0.85rem;
+  .breadcrumb-nav {
+    margin-bottom: 0.85rem;
+    font-size: 0.82rem;
   }
 
   /* Grid Layout: Main Article + Sticky Sidebar */
@@ -302,85 +355,136 @@ const relatedPosts = allPosts
     display: grid;
     grid-template-columns: minmax(0, 1fr) 300px;
     gap: 2.25rem;
-    align-items: start; /* Crucial for sticky behavior */
+    align-items: start;
   }
 
   /* ==========================================================
-     STICKY SIDEBAR IMPLEMENTATION
+     RELIABLE STICKY SIDEBAR
   ========================================================== */
   .sidebar-col {
     position: relative;
-    height: 100%;
+    width: 100%;
   }
 
   .sticky-sidebar {
     position: sticky;
-    top: 1.5rem; /* Sticks when scrolled */
+    top: 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.15rem;
+    max-height: calc(100vh - 2.5rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--green-light-border) transparent;
   }
 
   .sidebar-widget {
     background: #ffffff;
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.25rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    border-radius: 10px;
+    padding: 1.1rem;
+    box-shadow: var(--card-shadow);
   }
 
+  .widget-title {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-heading);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  /* Dynamic Table of Contents (TOC) */
+  .toc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  :global(.toc-link) {
+    font-size: 0.82rem;
+    color: #475569;
+    text-decoration: none;
+    line-height: 1.35;
+    padding: 0.2rem 0;
+    transition: color 0.15s ease;
+    border-left: 2px solid transparent;
+    padding-left: 0.4rem;
+  }
+
+  :global(.toc-link:hover) {
+    color: var(--green-primary);
+    border-left-color: var(--green-primary);
+  }
+
+  :global(.toc-h3) {
+    padding-left: 1rem;
+    font-size: 0.78rem;
+    color: #64748b;
+  }
+
+  /* Newsletter Widget */
   .newsletter-widget {
     background: linear-gradient(145deg, #f0fdf4 0%, #ecfdf5 100%);
     border: 1px solid var(--green-light-border);
   }
 
-  .widget-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  .widget-badge {
+    display: inline-block;
+    background: var(--green-primary);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
     margin-bottom: 0.4rem;
   }
 
-  .widget-header h3,
-  .sidebar-widget .widget-title {
+  .newsletter-widget h3 {
     margin: 0;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: var(--text-heading);
+    color: var(--green-dark);
+    line-height: 1.3;
   }
 
   .newsletter-widget p {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: #475569;
-    margin: 0.35rem 0 0.85rem;
+    margin: 0.4rem 0 0.8rem;
     line-height: 1.45;
   }
 
   .mini-form {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.45rem;
   }
 
   .mini-form input {
-    padding: 0.55rem 0.75rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 6px;
     border: 1px solid #cbd5e1;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     outline: none;
-    transition: border-color 0.2s;
+    background: #ffffff;
+    transition: border-color 0.15s ease;
   }
 
   .mini-form input:focus {
     border-color: var(--green-primary);
+    box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.15);
   }
 
   .mini-form button {
     background: var(--green-primary);
     color: #ffffff;
     font-weight: 600;
-    font-size: 0.85rem;
-    padding: 0.55rem;
+    font-size: 0.82rem;
+    padding: 0.5rem;
     border-radius: 6px;
     border: none;
     cursor: pointer;
@@ -391,118 +495,126 @@ const relatedPosts = allPosts
     background: var(--green-primary-hover);
   }
 
+  /* Clean Category Links */
   .clean-category-list {
     list-style: none;
-    margin: 0.75rem 0 0;
+    margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.25rem;
   }
 
   .clean-category-list a {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.45rem 0.6rem;
+    padding: 0.4rem 0.5rem;
     border-radius: 6px;
     color: #475569;
     text-decoration: none;
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     font-weight: 500;
     transition: all 0.15s ease;
   }
 
   .clean-category-list a:hover {
     background: var(--green-light);
-    color: var(--green-primary-hover);
-    padding-left: 0.8rem;
+    color: var(--green-primary);
+    padding-left: 0.7rem;
   }
 
   /* ==========================================================
-     ARTICLE HEADER & TITLE
+     ARTICLE HEADER & TITLE (Optimized Typography)
   ========================================================== */
   .article-header {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
 
-  .header-badges {
+  .header-pills {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.65rem;
   }
 
   .category-badge {
     background: var(--green-light);
     color: var(--green-primary);
     border: 1px solid var(--green-light-border);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    padding: 0.25rem 0.65rem;
-    border-radius: 20px;
+    letter-spacing: 0.03em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 16px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+
+  .category-badge:hover {
+    background: #dcfce7;
   }
 
   .read-time-pill {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    font-size: 0.8rem;
+    gap: 0.25rem;
+    font-size: 0.78rem;
     color: var(--text-muted);
     font-weight: 500;
   }
 
+  /* Responsive & Clean Title */
   .article-title {
-    font-size: clamp(1.85rem, 3.2vw, 2.5rem);
+    font-size: clamp(1.8rem, 3.2vw, 2.45rem);
     font-weight: 800;
     line-height: 1.22;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.022em;
     color: var(--text-heading);
-    margin: 0 0 0.65rem 0;
+    margin: 0 0 0.6rem 0;
   }
 
   .article-subtitle {
     font-size: 1.05rem;
-    line-height: 1.55;
+    line-height: 1.5;
     color: var(--text-muted);
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.9rem 0;
   }
 
   .article-meta-card {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 0;
+    padding: 0.65rem 0;
     border-top: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
     flex-wrap: wrap;
-    gap: 0.8rem;
+    gap: 0.75rem;
   }
 
   .author-meta-info {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.6rem;
   }
 
   .author-avatar-placeholder {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--green-primary), #047857);
     color: #ffffff;
     font-weight: 700;
     display: grid;
     place-items: center;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
   }
 
   .meta-details {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    gap: 0.05rem;
   }
 
   .author-name a,
@@ -510,7 +622,7 @@ const relatedPosts = allPosts
     font-weight: 700;
     color: var(--text-heading);
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
   }
 
   .author-name a:hover {
@@ -518,23 +630,24 @@ const relatedPosts = allPosts
   }
 
   .date-info {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     color: var(--text-muted);
   }
 
   .date-info .dot {
-    margin: 0 0.25rem;
+    margin: 0 0.2rem;
   }
 
+  /* Quick Social Buttons */
   .quick-share {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.35rem;
   }
 
   .share-btn {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
@@ -557,12 +670,12 @@ const relatedPosts = allPosts
 
   .tooltip {
     position: absolute;
-    bottom: -25px;
+    bottom: -24px;
     left: 50%;
     transform: translateX(-50%);
     background: #0f172a;
     color: #fff;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     padding: 2px 6px;
     border-radius: 4px;
     opacity: 0;
@@ -578,83 +691,131 @@ const relatedPosts = allPosts
   /* ==========================================================
      FEATURED IMAGE
   ========================================================== */
-  .featured-media-container {
-    margin: 0 0 1.75rem 0;
+  .featured-media-box {
+    margin: 0 0 1.5rem 0;
   }
 
-  .featured-media-container img {
+  .featured-media-box img {
     width: 100%;
     height: auto;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.04);
     display: block;
+    object-fit: cover;
   }
 
-  .featured-media-container figcaption {
-    font-size: 0.8rem;
+  .featured-media-box figcaption {
+    font-size: 0.78rem;
     color: var(--text-muted);
     text-align: center;
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
     font-style: italic;
   }
 
   /* ==========================================================
-     ENGAGING ARTICLE TYPOGRAPHY & BODY STYLING
+     ENGAGING POST TYPOGRAPHY & BODY STYLING
   ========================================================== */
   :global(.article-body) {
-    font-size: 1.06rem;
+    font-size: 1.05rem;
     line-height: 1.75;
     color: var(--text-body);
     word-break: break-word;
   }
 
   :global(.article-body p) {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.15rem;
   }
 
   :global(.article-body h2) {
-    font-size: 1.55rem;
+    font-size: 1.48rem;
     font-weight: 800;
     color: var(--text-heading);
     line-height: 1.3;
-    margin: 2rem 0 0.85rem;
+    margin: 1.85rem 0 0.75rem;
     padding-bottom: 0.35rem;
     border-bottom: 2px solid #f1f5f9;
     letter-spacing: -0.015em;
+    scroll-margin-top: 1.5rem;
   }
 
   :global(.article-body h3) {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--text-heading);
     line-height: 1.35;
-    margin: 1.5rem 0 0.65rem;
+    margin: 1.35rem 0 0.55rem;
+    scroll-margin-top: 1.5rem;
   }
 
   :global(.article-body ul),
   :global(.article-body ol) {
-    margin: 1rem 0 1.25rem 1.2rem;
+    margin: 0.85rem 0 1.15rem 1.1rem;
     padding-left: 0.5rem;
   }
 
   :global(.article-body li) {
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.35rem;
   }
 
   :global(.article-body li::marker) {
     color: var(--green-primary);
-    font-weight: bold;
+    font-weight: 700;
+  }
+
+  /* Custom Callout Box Styling */
+  :global(.article-body .callout) {
+    margin: 1.35rem 0;
+    padding: 1rem 1.15rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    border-left: 4px solid var(--green-primary);
+    background: var(--green-light);
+  }
+
+  :global(.article-body .callout-title) {
+    font-weight: 700;
+    color: var(--green-dark);
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  :global(.article-body .callout-warning) {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+  }
+
+  :global(.article-body .callout-warning .callout-title) {
+    color: #92400e;
+  }
+
+  /* Key Takeaways Box */
+  :global(.article-body .takeaways-box) {
+    background: linear-gradient(145deg, #f0fdf4, #ffffff);
+    border: 1px solid var(--green-light-border);
+    border-radius: 10px;
+    padding: 1.15rem 1.35rem;
+    margin: 1.35rem 0;
+  }
+
+  :global(.article-body .takeaways-box h4) {
+    margin: 0 0 0.5rem 0;
+    color: var(--green-dark);
+    font-size: 1.05rem;
+    font-weight: 700;
   }
 
   :global(.article-body blockquote) {
-    margin: 1.5rem 0;
-    padding: 1rem 1.25rem;
+    margin: 1.35rem 0;
+    padding: 0.85rem 1.15rem;
     background: var(--green-light);
     border-left: 4px solid var(--green-primary);
     border-radius: 0 8px 8px 0;
     font-style: italic;
     color: var(--green-dark);
-    font-size: 1.05rem;
+    font-size: 1.02rem;
     line-height: 1.6;
   }
 
@@ -684,31 +845,34 @@ const relatedPosts = allPosts
     color: #0f172a;
     padding: 0.15rem 0.35rem;
     border-radius: 4px;
-    font-size: 0.88em;
+    font-size: 0.86em;
     border: 1px solid #e2e8f0;
   }
 
   :global(.article-body pre) {
     background: #0f172a;
     color: #f8fafc;
-    padding: 1rem 1.25rem;
+    padding: 1rem 1.15rem;
     border-radius: 8px;
     overflow-x: auto;
-    margin: 1.4rem 0;
-    font-size: 0.9rem;
+    margin: 1.25rem 0;
+    font-size: 0.88rem;
     border: 1px solid #1e293b;
   }
 
+  /* Polished Responsive Tables */
   :global(.article-body table) {
     width: 100%;
     border-collapse: collapse;
-    margin: 1.5rem 0;
-    font-size: 0.92rem;
+    margin: 1.35rem 0;
+    font-size: 0.9rem;
+    overflow-x: auto;
+    display: block;
   }
 
   :global(.article-body th),
   :global(.article-body td) {
-    padding: 0.6rem 0.85rem;
+    padding: 0.55rem 0.8rem;
     border: 1px solid var(--border-color);
     text-align: left;
   }
@@ -717,6 +881,11 @@ const relatedPosts = allPosts
     background: #f8fafc;
     font-weight: 700;
     color: var(--text-heading);
+    border-bottom: 2px solid var(--green-primary);
+  }
+
+  :global(.article-body tr:nth-child(even)) {
+    background: #fbfcfe;
   }
 
   /* ==========================================================
@@ -725,23 +894,23 @@ const relatedPosts = allPosts
   .tags-container {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 1.75rem;
+    gap: 0.45rem;
+    margin-top: 1.5rem;
     flex-wrap: wrap;
   }
 
   .tags-label {
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--text-muted);
   }
 
   .tag-pill {
     background: var(--bg-subtle);
     border: 1px solid var(--border-color);
-    padding: 0.2rem 0.65rem;
-    border-radius: 16px;
-    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 14px;
+    font-size: 0.78rem;
     color: #475569;
     text-decoration: none;
     font-weight: 500;
@@ -754,41 +923,42 @@ const relatedPosts = allPosts
     border-color: var(--green-light-border);
   }
 
+  /* Share Card */
   .share-box {
-    margin: 2rem 0 1.5rem;
-    padding: 1.25rem 1.5rem;
+    margin: 1.75rem 0 1.25rem;
+    padding: 1.15rem 1.35rem;
     background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
     border: 1px solid var(--green-light-border);
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.85rem;
   }
 
   .share-box-content h4 {
     margin: 0 0 0.2rem;
-    font-size: 1.05rem;
+    font-size: 1rem;
     color: var(--text-heading);
   }
 
   .share-box-content p {
     margin: 0;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--text-muted);
   }
 
   .share-box-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.45rem;
   }
 
   .share-pill {
-    padding: 0.45rem 0.95rem;
+    padding: 0.4rem 0.85rem;
     border-radius: 6px;
     font-weight: 600;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     text-decoration: none;
     transition: all 0.15s ease;
   }
@@ -813,12 +983,16 @@ const relatedPosts = allPosts
     color: var(--green-primary);
   }
 
+  .author-section {
+    margin-top: 1.5rem;
+  }
+
   /* ==========================================================
-     RELATED POSTS
+     RELATED POSTS GRID
   ========================================================== */
   .related-posts {
-    margin-top: 2.5rem;
-    padding-top: 1.5rem;
+    margin-top: 2rem;
+    padding-top: 1.25rem;
     border-top: 1px solid var(--border-color);
   }
 
@@ -826,18 +1000,18 @@ const relatedPosts = allPosts
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.85rem;
   }
 
   .section-header h2 {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: var(--text-heading);
     margin: 0;
   }
 
   .view-all-link {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--green-primary);
     text-decoration: none;
@@ -846,7 +1020,7 @@ const relatedPosts = allPosts
   .post-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    gap: 0.85rem;
   }
 
   .modern-card {
@@ -862,35 +1036,36 @@ const relatedPosts = allPosts
   .modern-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-color: var(--green-light-border);
   }
 
   .card-thumb img {
     width: 100%;
-    height: 120px;
+    height: 110px;
     object-fit: cover;
     display: block;
   }
 
   .card-body {
-    padding: 0.75rem;
+    padding: 0.65rem;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
   }
 
   .card-category {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     font-weight: 700;
     color: var(--green-primary);
     text-transform: uppercase;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
   }
 
   .card-title {
-    font-size: 0.88rem;
-    line-height: 1.35;
+    font-size: 0.84rem;
+    line-height: 1.3;
     font-weight: 600;
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.4rem;
   }
 
   .card-title a {
@@ -903,22 +1078,34 @@ const relatedPosts = allPosts
   }
 
   .card-date {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text-muted);
     margin-top: auto;
   }
 
-  /* Responsive Adjustments */
-  @media (max-width: 900px) {
+  /* ==========================================================
+     RESPONSIVE BREAKPOINTS
+  ========================================================== */
+  @media (max-width: 960px) {
     .page-layout {
       grid-template-columns: 1fr;
-      gap: 2rem;
+      gap: 1.75rem;
     }
     .sticky-sidebar {
       position: static;
+      max-height: none;
     }
     .post-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .post-grid {
       grid-template-columns: 1fr;
+    }
+    .article-title {
+      font-size: 1.75rem;
     }
   }
 </style>
