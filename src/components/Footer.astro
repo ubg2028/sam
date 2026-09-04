@@ -8,7 +8,7 @@ const year = new Date().getFullYear();
   <div class="container footer-top">
     <div class="footer-grid">
       <div class="footer-brand">
-        <a href="/sam/" class="logo"><span class="logo-mark">🌿</span>Verdant Notes</a>
+        <a href="/sam/" class="logo"><span class="logo-mark">🌿</span> Verdant Notes</a>
         <p>Clear, well-researched essays on technology, work, and sustainable living — written by people who've done the thing.</p>
         <div class="social-row">
           <a href="#" aria-label="Verdant Notes on X">X</a>
@@ -58,3 +58,98 @@ const year = new Date().getFullYear();
     </nav>
   </div>
 </footer>
+
+<style>
+  /* Footer Base Styling */
+  .site-footer {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    box-sizing: border-box;
+  }
+
+  .footer-top {
+    padding-top: 3.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  /* मोबाइल पर 1 कॉलम रहेगा ताकि स्क्रीन से बाहर न जाए */
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    width: 100%;
+  }
+
+  /* टैबलेट पर 2 कॉलम */
+  @media (min-width: 640px) {
+    .footer-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  /* डेस्कटॉप पर पूरे 4 कॉलम */
+  @media (min-width: 1024px) {
+    .footer-grid {
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 2.5rem;
+    }
+  }
+
+  /* कॉलम्स के लिंक्स */
+  .footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0.75rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .social-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  /* Bottom Footer: मोबाइल पर लिंक्स नीचे और wrap हो जाएंगे */
+  .footer-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    text-align: center;
+  }
+
+  .footer-bottom nav ul {
+    display: flex;
+    flex-wrap: wrap;       /* स्क्रीन भरते ही अगली लाइन पर चले जाएंगे */
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 0.75rem 1.25rem;
+  }
+
+  /* डेस्कटॉप पर बॉटम बार एक सीधी लाइन में दोनों तरफ फैल जाएगा */
+  @media (min-width: 768px) {
+    .footer-bottom {
+      flex-direction: row;
+      justify-content: space-between;
+      text-align: left;
+    }
+  }
+</style>
