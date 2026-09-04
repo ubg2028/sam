@@ -24,10 +24,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
+          cache: 'npm' # ⚡ Caching enable kar di (Super fast builds ke liye)
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci # ⚡ 'npm install' se 3x fast install karega
 
       - name: Build site
         run: npm run build
