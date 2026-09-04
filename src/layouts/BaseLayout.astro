@@ -20,15 +20,18 @@ const {
   title,
   description,
   currentPath = '',
-  image = '../sam/images/og-default.jpg',
+  image = '/sam/images/og-default.jpg',
   type = 'website',
   noindex = false,
   publishedTime,
   author,
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const ogImageURL = new URL(image, Astro.site);
+// Safe URL resolutions for SEO & Social Previews
+const siteUrl = Astro.site ? Astro.site.toString() : 'https://yoursite.com';
+const canonicalURL = new URL(Astro.url.pathname, siteUrl);
+const ogImageURL = image.startsWith('http') ? image : new URL(image, siteUrl).toString();
+
 const siteName = 'Verdant Notes';
 const fullTitle = title.includes(siteName) ? title : `${title} — ${siteName}`;
 ---
@@ -40,9 +43,18 @@ const fullTitle = title.includes(siteName) ? title : `${title} — ${siteName}`;
   <title>{fullTitle}</title>
   <meta name="description" content={description} />
   <link rel="canonical" href={canonicalURL} />
-  {noindex && <meta name="robots" content="noindex, follow" />}
+  {noindex && <meta name="robots" content="noindex, nofollow" />}
 
-  <!-- Open Graph -->
+  <!-- Mobile Browser Theme Color -->
+  <meta name="theme-color" content="#059669" />
+  <meta name="color-scheme" content="light" />
+
+  <!-- Google Fonts Preconnect (Plus Jakarta Sans & Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Open Graph / Facebook / WhatsApp -->
   <meta property="og:type" content={type === 'profile' ? 'profile' : type} />
   <meta property="og:title" content={fullTitle} />
   <meta property="og:description" content={description} />
@@ -54,33 +66,195 @@ const fullTitle = title.includes(siteName) ? title : `${title} — ${siteName}`;
   )}
   {type === 'article' && author && <meta property="article:author" content={author} />}
 
-  <!-- Twitter -->
+  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={fullTitle} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImageURL} />
 
+  <!-- Icons, Feeds & Sitemap -->
   <link rel="icon" type="image/svg+xml" href="/sam/favicon.svg" />
   <link rel="sitemap" href="/sam/sitemap-index.xml" />
   <link rel="alternate" type="application/rss+xml" title={siteName} href="/sam/rss.xml" />
 
-  <!--
-    AdSense verification / loader script goes here once approved, e.g.:
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
-  -->
-
+  <!-- Dynamic Head Slots for Post-specific metadata -->
   <slot name="head" />
 </head>
 <body>
+  <!-- Accessibility Skip Link -->
   <a class="skip-link" href="#main-content">Skip to content</a>
 
+  <!-- Global Header / Navbar -->
   <Header currentPath={currentPath} />
 
-  <main id="main-content">
+  <!-- Main Content Wrapper (Expands to prevent footer floating) -->
+  <main id="main-content" class="site-main-content">
     <slot />
   </main>
 
+  <!-- Global Footer -->
   <Footer />
+
+  <!-- Cookie Consent -->
   <CookieBanner />
+
+  <!-- Floating Back to Top Button -->
+  <button id="backToTopBtn" class="back-to-top-btn" aria-label="Scroll to top" title="Back to top">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m18 15-6-6-6 6"/>
+    </svg>
+  </button>
+
+  <!-- Smooth Back to Top Script -->
+  <script>
+    const backToTopBtn = document.getElementById('backToTopBtn');
+    if (backToTopBtn) {
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 350) {
+          backToTopBtn.classList.add('visible');
+        } else {
+          backToTopBtn.classList.remove('visible');
+        }
+      });
+
+      backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+      });
+    }
+  </script>
 </body>
 </html>
+
+<style is:global>
+  /* ==========================================================
+     GLOBAL GREEN THEME VARIABLES & CORE BASE
+  ========================================================== */
+  :root {
+    --green-600: #059669;
+    --green-700: #047857;
+    --green-800: #065f46;
+    --green-50: #f0fdf4;
+    --green-100: #dcfce7;
+    --green-200: #bbf7d0;
+    
+    --text-main: #0f172a;
+    --text-body: #334155;
+    --text-muted: #64748b;
+    --border-light: #e2e8f0;
+    --bg-page: #fafbfc;
+    --bg-surface: #ffffff;
+    
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  /* Smooth Scrolling */
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+    background-color: var(--bg-page);
+    color: var(--text-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Full Page Sticky Footer Layout */
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-page);
+  }
+
+  .site-main-content {
+    flex: 1 0 auto; /* Ensures footer sticks to bottom if content is short */
+    width: 100%;
+  }
+
+  /* Custom Green Text Selection Highlight */
+  ::selection {
+    background-color: var(--green-200);
+    color: var(--green-800);
+  }
+
+  /* Custom Slim Green Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--green-600);
+  }
+
+  /* Accessibility Skip Link */
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 1rem;
+    background: var(--green-600);
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 6px;
+    z-index: 10000;
+    text-decoration: none;
+    transition: top 0.2s ease-in-out;
+  }
+
+  .skip-link:focus {
+    top: 1rem;
+    outline: 2px solid var(--green-800);
+  }
+
+  /* Floating Back-to-Top Button */
+  .back-to-top-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 1.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid var(--border-light);
+    color: var(--green-600);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    z-index: 99;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .back-to-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .back-to-top-btn:hover {
+    background: var(--green-600);
+    color: #ffffff;
+    border-color: var(--green-600);
+    box-shadow: 0 6px 18px rgba(5, 150, 105, 0.25);
+    transform: translateY(-2px);
+  }
+</style>
