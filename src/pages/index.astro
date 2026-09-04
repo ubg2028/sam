@@ -50,7 +50,7 @@ const heroAuthor = heroPost ? getAuthorBySlug(heroPost.data.authorSlug) : undefi
       <div class="content-col">
         <div class="section-heading" id="latest-posts">
           <h2>Latest Posts</h2>
-          <a href="/blog">View all</a>
+          <a href="/sam/blog">View all</a>
         </div>
 
         {gridPosts.length > 0 ? (
@@ -76,7 +76,7 @@ const heroAuthor = heroPost ? getAuthorBySlug(heroPost.data.authorSlug) : undefi
         <div class="widget">
           <h3>Categories</h3>
           <ul class="category-list">
-            {categories.map((cat) => <li><a href="/blog">{cat}</a></li>)}
+            {categories.map((cat) => <li><a href="/sam/blog">{cat}</a></li>)}
           </ul>
         </div>
 
@@ -102,7 +102,7 @@ const heroAuthor = heroPost ? getAuthorBySlug(heroPost.data.authorSlug) : undefi
         <div class="widget">
           <h3>About Verdant Notes</h3>
           <p style="font-size:0.92rem;color:var(--color-text-secondary);">A small team of working writers and engineers who publish what they've actually tested.</p>
-          <p style="margin-top:0.8em;"><a href="/about">Read our story &rarr;</a></p>
+          <p style="margin-top:0.8em;"><a href="/sam/about">Read our story &rarr;</a></p>
         </div>
       </aside>
     </div>

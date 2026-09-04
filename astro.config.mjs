@@ -13,7 +13,7 @@ export default defineConfig({
   //
   // Using a custom domain (CNAME)? Set `site` to your domain and drop `base`.
   site: 'https://ubg2028.github.io',
-  base: '/sam/',
+  base: '/sam',
   output: 'static',
   compressHTML: true,
   markdown: {
