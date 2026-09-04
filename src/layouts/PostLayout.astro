@@ -84,7 +84,7 @@ const relatedPosts = allPosts
                   {category}
                 </a>
                 <span class="read-time-pill">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                   {readingTime} min read
                 </span>
                 <span class="date-pill">
@@ -96,7 +96,7 @@ const relatedPosts = allPosts
 
               {description && <p class="article-subtitle">{description}</p>}
 
-              <!-- Quick Meta & Share Strip (Author Linked Directly Here) -->
+              <!-- Quick Meta & Share Strip (Author Linked Directly to Profile) -->
               <div class="article-meta-strip">
                 <div class="author-inline">
                   {author ? (
@@ -224,18 +224,18 @@ const relatedPosts = allPosts
           )}
         </main>
 
-        <!-- STICKY SIDEBAR -->
+        <!-- NON-SCROLLABLE STICKY SIDEBAR -->
         <aside class="sidebar-col" aria-label="Sidebar">
           <div class="sticky-sidebar">
             
-            <!-- 1. KEY INSIGHTS (Table of Contents with Smooth Scroll) -->
+            <!-- 1. KEY INSIGHTS (TOC without internal scrollbar) -->
             <div class="sidebar-widget key-insights-widget" id="toc-widget">
               <div class="widget-header">
                 <span class="widget-icon">🎯</span>
                 <h3 class="widget-title">Key Insights</h3>
               </div>
               <nav id="toc-list" class="toc-nav" aria-label="Table of contents">
-                <!-- Headings will be automatically injected here by JavaScript -->
+                <!-- Headings injected dynamically -->
               </nav>
             </div>
 
@@ -865,7 +865,7 @@ const relatedPosts = allPosts
   }
 
   /* ==========================================================
-     STICKY SIDEBAR IMPLEMENTATION (Key Insights + Categories + You May Like)
+     CLEAN NON-SCROLLABLE STICKY SIDEBAR
   ========================================================== */
   .sidebar-col {
     position: relative;
@@ -874,14 +874,11 @@ const relatedPosts = allPosts
 
   .sticky-sidebar {
     position: sticky;
-    top: 1.25rem;
+    top: 1.25rem; /* Sticks firmly as one block */
     display: flex;
     flex-direction: column;
-    gap: 1.15rem;
-    max-height: calc(100vh - 2.5rem);
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--green-200) transparent;
+    gap: 1rem;
+    /* Removed all max-height, overflow-y and scrollbars */
   }
 
   .sidebar-widget {
@@ -912,7 +909,7 @@ const relatedPosts = allPosts
     color: var(--text-main);
   }
 
-  /* 1. Key Insights (TOC) */
+  /* 1. Key Insights (TOC) - Normal non-scrollable flow */
   .key-insights-widget {
     border-top: 3px solid var(--green-600);
   }
@@ -921,9 +918,6 @@ const relatedPosts = allPosts
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
-    max-height: 260px;
-    overflow-y: auto;
-    padding-right: 0.25rem;
   }
 
   :global(.toc-link) {
@@ -1171,7 +1165,6 @@ const relatedPosts = allPosts
     }
     .sticky-sidebar {
       position: static;
-      max-height: none;
     }
     .post-grid {
       grid-template-columns: 1fr;
