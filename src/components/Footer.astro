@@ -1,12 +1,11 @@
 ---
 // src/components/Footer.astro
-// Every important page on the site is linked from here so nothing is
-// orphaned — a requirement AdSense reviewers check for.
 const year = new Date().getFullYear();
 ---
 <footer class="site-footer">
   <div class="container footer-top">
     <div class="footer-grid">
+      <!-- Brand Section -->
       <div class="footer-brand">
         <a href="/sam/" class="logo"><span class="logo-mark">🌿</span> Verdant Notes</a>
         <p>Clear, well-researched essays on technology, work, and sustainable living — written by people who've done the thing.</p>
@@ -16,40 +15,35 @@ const year = new Date().getFullYear();
           <a href="/sam/rss.xml" aria-label="Verdant Notes RSS feed">RSS</a>
         </div>
       </div>
+
+      <!-- Column 1: Explore (कंटेंट) -->
       <div class="footer-col">
         <h4>Explore</h4>
         <ul>
           <li><a href="/sam/">Home</a></li>
-          <li><a href="/sam/blog">Blog</a></li>
-          <li><a href="/sam/about">About</a></li>
+          <li><a href="/sam/blog">All Essays</a></li>
+          <li><a href="/sam/rss.xml">RSS Feed</a></li>
+        </ul>
+      </div>
+
+      <!-- Column 2: About & Team (कंपनी) -->
+      <div class="footer-col">
+        <h4>About</h4>
+        <ul>
+          <li><a href="/sam/about">Our Mission</a></li>
           <li><a href="/sam/team">Editorial Team</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Company</h4>
-        <ul>
-          <li><a href="/sam/about">About Us</a></li>
-          <li><a href="/sam/team">Our Writers</a></li>
-          <li><a href="/sam/contact">Contact</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Legal</h4>
-        <ul>
-          <li><a href="/sam/privacy-policy">Privacy Policy</a></li>
-          <li><a href="/sam/terms">Terms &amp; Conditions</a></li>
-          <li><a href="/sam/disclaimer">Disclaimer</a></li>
-          <li><a href="/sam/gdpr">GDPR</a></li>
-          <li><a href="/sam/dmca">DMCA</a></li>
+          <li><a href="/sam/contact">Contact Us</a></li>
         </ul>
       </div>
     </div>
   </div>
+
+  <!-- Bottom Bar: सिर्फ यहीं पर सारे Legal Pages होंगे -->
   <div class="container footer-bottom">
     <p>&copy; {year} Verdant Notes. All rights reserved.</p>
     <nav aria-label="Legal">
       <ul>
-        <li><a href="/sam/privacy-policy">Privacy</a></li>
+        <li><a href="/sam/privacy-policy">Privacy Policy</a></li>
         <li><a href="/sam/terms">Terms</a></li>
         <li><a href="/sam/disclaimer">Disclaimer</a></li>
         <li><a href="/sam/gdpr">GDPR</a></li>
@@ -60,19 +54,18 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
-  /* Footer Base Styling */
   .site-footer {
     width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
+    background: #fbfbf9; /* हल्का प्रीमियम बैकग्राउंड */
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
     box-sizing: border-box;
   }
 
   .container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 0 1.25rem;
+    padding: 0 1.5rem;
     box-sizing: border-box;
   }
 
@@ -81,62 +74,78 @@ const year = new Date().getFullYear();
     padding-bottom: 2.5rem;
   }
 
-  /* मोबाइल पर 1 कॉलम रहेगा ताकि स्क्रीन से बाहर न जाए */
+  /* Grid: मोबाइल पर 1 कॉलम, डेस्कटॉप पर 3 कॉलम */
   .footer-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 2.5rem;
-    width: 100%;
   }
 
-  /* टैबलेट पर 2 कॉलम */
-  @media (min-width: 640px) {
+  @media (min-width: 768px) {
     .footer-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 3rem;
     }
   }
 
-  /* डेस्कटॉप पर पूरे 4 कॉलम */
-  @media (min-width: 1024px) {
-    .footer-grid {
-      grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 2.5rem;
-    }
+  .footer-brand p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0.75rem 0 1.25rem;
+    max-width: 340px;
   }
 
-  /* कॉलम्स के लिंक्स */
+  .footer-col h4 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #333;
+    margin: 0 0 1rem;
+    font-weight: 700;
+  }
+
   .footer-col ul {
     list-style: none;
     padding: 0;
-    margin: 0.75rem 0 0;
+    margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.65rem;
+  }
+
+  .footer-col a {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+  }
+
+  .footer-col a:hover {
+    color: #111;
   }
 
   .social-row {
     display: flex;
     gap: 0.75rem;
-    margin-top: 1rem;
   }
 
-  /* Bottom Footer: मोबाइल पर लिंक्स नीचे और wrap हो जाएंगे */
+  /* Bottom Bar */
   .footer-bottom {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     gap: 1rem;
-    padding-top: 1.5rem;
-    padding-bottom: 2rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 1.75rem 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    font-size: 0.85rem;
+    color: #777;
     text-align: center;
   }
 
   .footer-bottom nav ul {
     display: flex;
-    flex-wrap: wrap;       /* स्क्रीन भरते ही अगली लाइन पर चले जाएंगे */
+    flex-wrap: wrap;
     justify-content: center;
     list-style: none;
     padding: 0;
@@ -144,7 +153,16 @@ const year = new Date().getFullYear();
     gap: 0.75rem 1.25rem;
   }
 
-  /* डेस्कटॉप पर बॉटम बार एक सीधी लाइन में दोनों तरफ फैल जाएगा */
+  .footer-bottom a {
+    color: #777;
+    text-decoration: none;
+  }
+
+  .footer-bottom a:hover {
+    color: #111;
+    text-decoration: underline;
+  }
+
   @media (min-width: 768px) {
     .footer-bottom {
       flex-direction: row;
