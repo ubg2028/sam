@@ -5,7 +5,7 @@ pubDate: 2026-09-03
 authorSlug: "elena-vance"
 category: "Engineering"
 tags: ["software architecture", "engineering", "monolith"]
-image: "../sam/blog/images/posts/boring-architecture.jpg"
+image: "/sam/blog/images/posts/boring-architecture.jpg"
 imageAlt: "A clean architectural blueprint laid out on a developer workspace"
 ---
 
