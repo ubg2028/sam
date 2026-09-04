@@ -3,6 +3,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
+import AuthorBio from '../components/AuthorBio.astro';
 import { getAuthorBySlug } from '../data/authors';
 
 export interface Props {
@@ -20,8 +21,30 @@ const readingTime = Math.max(1, Math.round(wordCount / wordsPerMinute));
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
-// Related Posts
+// Fetch all published posts
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+
+// 1. Dynamic Category Counts
+const categoryMap = allPosts.reduce((acc, p) => {
+  const cat = p.data.category;
+  if (cat) {
+    acc[cat] = (acc[cat] || 0) + 1;
+  }
+  return acc;
+}, {} as Record<string, number>);
+
+const categoryList = Object.entries(categoryMap).map(([name, count]) => ({
+  name,
+  count,
+}));
+
+// 2. "You May Also Like" - Random 3 other posts
+const otherPosts = allPosts.filter((p) => p.slug !== post.slug);
+const randomPosts = [...otherPosts]
+  .sort(() => 0.5 - Math.random())
+  .slice(0, 3);
+
+// 3. Related Posts for bottom section
 const relatedPosts = allPosts
   .filter((p) => p.slug !== post.slug && p.data.category === category)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
@@ -40,10 +63,11 @@ const relatedPosts = allPosts
   <slot name="head" slot="head" />
 
   <!-- Top Reading Progress Bar -->
-  <div id="reading-progress" class="reading-progress-bar"></div>
+  <div id="reading-progress" class="reading-progress-bar" aria-hidden="true"></div>
 
   <div class="blog-wrapper">
     <div class="container">
+      
       <!-- Breadcrumb Navigation -->
       <nav class="breadcrumb-container" aria-label="Breadcrumb">
         <Breadcrumb items={[{ label: 'Blog', href: '/sam/blog' }, { label: category, href: `/sam/blog?category=${encodeURIComponent(category)}` }, { label: title }]} />
@@ -56,7 +80,9 @@ const relatedPosts = allPosts
             <!-- Article Header -->
             <header class="article-header">
               <div class="header-badges">
-                <span class="category-badge">{category}</span>
+                <a href={`/sam/blog?category=${encodeURIComponent(category)}`} class="category-badge">
+                  {category}
+                </a>
                 <span class="read-time-pill">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                   {readingTime} min read
@@ -70,25 +96,39 @@ const relatedPosts = allPosts
 
               {description && <p class="article-subtitle">{description}</p>}
 
-              <!-- Quick Meta & Share Strip -->
+              <!-- Quick Meta & Share Strip (Author Linked Directly Here) -->
               <div class="article-meta-strip">
                 <div class="author-inline">
-                  <div class="author-avatar-sm">
-                    {author?.avatar ? (
-                      <img src={author.avatar} alt={author.name} />
-                    ) : (
-                      <span>{author?.name ? author.name.charAt(0) : 'E'}</span>
-                    )}
-                  </div>
-                  <div>
-                    <span class="byline">Written by</span>
-                    <span class="author-name-text">{author?.name ?? 'Editorial Team'}</span>
-                  </div>
+                  {author ? (
+                    <a href={`/sam/team/${author.slug}`} class="author-profile-link" title={`View ${author.name}'s profile`}>
+                      <div class="author-avatar-sm">
+                        {author.avatar ? (
+                          <img src={author.avatar} alt={author.name} />
+                        ) : (
+                          <span>{author.name.charAt(0)}</span>
+                        )}
+                      </div>
+                      <div class="author-text-info">
+                        <span class="byline">Written by</span>
+                        <span class="author-name-text">{author.name}</span>
+                      </div>
+                    </a>
+                  ) : (
+                    <div class="author-profile-link">
+                      <div class="author-avatar-sm">
+                        <span>E</span>
+                      </div>
+                      <div class="author-text-info">
+                        <span class="byline">Written by</span>
+                        <span class="author-name-text">Editorial Team</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div class="quick-share">
                   <span class="share-text">Share:</span>
-                  <button class="share-btn copy-btn" id="copyLinkBtn" title="Copy link" aria-label="Copy Link">
+                  <button class="share-btn copy-btn" id="copyLinkBtn" title="Copy article link" aria-label="Copy Link">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                     <span class="tooltip" id="copyTooltip">Link Copied!</span>
                   </button>
@@ -105,7 +145,7 @@ const relatedPosts = allPosts
             <!-- Featured Image -->
             {image && (
               <figure class="featured-media-container">
-                <img src={image} alt={imageAlt ?? title} width="960" height="480" loading="eager" />
+                <img src={image} alt={imageAlt ?? title} width="960" height="480" loading="eager" decoding="async" />
                 {imageAlt && <figcaption>{imageAlt}</figcaption>}
               </figure>
             )}
@@ -144,6 +184,13 @@ const relatedPosts = allPosts
                 </a>
               </div>
             </div>
+
+            <!-- Author Bio Section at Bottom -->
+            {author && (
+              <div class="author-section">
+                <AuthorBio authorSlug={author.slug} />
+              </div>
+            )}
           </article>
 
           <!-- Related Posts Section -->
@@ -177,75 +224,63 @@ const relatedPosts = allPosts
           )}
         </main>
 
-        <!-- Sticky Sidebar with Author Bio -->
+        <!-- STICKY SIDEBAR -->
         <aside class="sidebar-col" aria-label="Sidebar">
           <div class="sticky-sidebar">
             
-            <!-- AUTHOR BIO & PROFILE CARD -->
-            <div class="sidebar-widget author-card-widget">
-              <div class="widget-badge">Author Profile</div>
-              <div class="author-card-header">
-                <div class="author-avatar-lg">
-                  {author?.avatar ? (
-                    <img src={author.avatar} alt={author.name} />
-                  ) : (
-                    <span>{author?.name ? author.name.charAt(0) : 'S'}</span>
-                  )}
-                </div>
-                <div class="author-info">
-                  <h3 class="author-title-name">
-                    {author?.name ?? 'Samrat'}
-                  </h3>
-                  <span class="founder-badge">Founder & Lead Architect</span>
-                </div>
+            <!-- 1. KEY INSIGHTS (Table of Contents with Smooth Scroll) -->
+            <div class="sidebar-widget key-insights-widget" id="toc-widget">
+              <div class="widget-header">
+                <span class="widget-icon">🎯</span>
+                <h3 class="widget-title">Key Insights</h3>
               </div>
-
-              <p class="author-bio-text">
-                {author?.bio ?? 'Building high-performance web experiences, sharing actionable engineering playbooks and growth insights.'}
-              </p>
-
-              <div class="author-social-links">
-                {author?.twitter && (
-                  <a href={author.twitter} target="_blank" rel="noopener noreferrer" class="social-icon" title="Twitter / X">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                  </a>
-                )}
-                {author?.linkedin && (
-                  <a href={author.linkedin} target="_blank" rel="noopener noreferrer" class="social-icon" title="LinkedIn">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.64 1.64 0 1 0 0-3.28 1.64 1.64 0 0 0 0 3.28m1.4 9.74V10.13H5.06v8.37h2.8z"/></svg>
-                  </a>
-                )}
-                {author?.github && (
-                  <a href={author.github} target="_blank" rel="noopener noreferrer" class="social-icon" title="GitHub">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-                  </a>
-                )}
-              </div>
+              <nav id="toc-list" class="toc-nav" aria-label="Table of contents">
+                <!-- Headings will be automatically injected here by JavaScript -->
+              </nav>
             </div>
 
-            <!-- Categories Card -->
+            <!-- 2. CATEGORIES WITH COUNTS -->
             <div class="sidebar-widget">
-              <h4 class="widget-title">Explore Topics</h4>
+              <div class="widget-header">
+                <span class="widget-icon">📂</span>
+                <h3 class="widget-title">Explore Categories</h3>
+              </div>
               <ul class="clean-category-list">
-                <li><a href="/sam/blog?category=Technology"><span>Technology</span> <span class="arrow">&rarr;</span></a></li>
-                <li><a href="/sam/blog?category=Work+%26+Life"><span>Work &amp; Life</span> <span class="arrow">&rarr;</span></a></li>
-                <li><a href="/sam/blog?category=Design"><span>Design &amp; UI</span> <span class="arrow">&rarr;</span></a></li>
-                <li><a href="/sam/blog?category=Growth"><span>Growth &amp; SEO</span> <span class="arrow">&rarr;</span></a></li>
+                {categoryList.map((cat) => (
+                  <li>
+                    <a href={`/sam/blog?category=${encodeURIComponent(cat.name)}`}>
+                      <span class="cat-name">{cat.name}</span>
+                      <span class="cat-count">{cat.count}</span>
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            <!-- Newsletter Pill -->
-            <div class="sidebar-widget newsletter-widget">
-              <div class="widget-header">
-                <span class="pulse-dot"></span>
-                <h4 class="widget-title">Weekly Insights</h4>
+            <!-- 3. YOU MAY ALSO LIKE (Random Post Suggestions) -->
+            {randomPosts.length > 0 && (
+              <div class="sidebar-widget you-may-like-widget">
+                <div class="widget-header">
+                  <span class="widget-icon">✨</span>
+                  <h3 class="widget-title">You May Also Like</h3>
+                </div>
+                <div class="mini-post-list">
+                  {randomPosts.map((randPost) => (
+                    <a href={`/sam/blog/${randPost.slug}`} class="mini-post-card">
+                      {randPost.data.image && (
+                        <div class="mini-post-thumb">
+                          <img src={randPost.data.image} alt={randPost.data.title} loading="lazy" />
+                        </div>
+                      )}
+                      <div class="mini-post-content">
+                        <span class="mini-post-category">{randPost.data.category}</span>
+                        <h4 class="mini-post-title">{randPost.data.title}</h4>
+                      </div>
+                    </a>
+                  ))}
+                </div>
               </div>
-              <p>Actionable guides on web engineering & design delivered to your inbox.</p>
-              <form class="mini-form" onsubmit="event.preventDefault(); alert('Subscribed!');">
-                <input type="email" placeholder="Enter your email" required />
-                <button type="submit">Subscribe</button>
-              </form>
-            </div>
+            )}
 
           </div>
         </aside>
@@ -255,17 +290,18 @@ const relatedPosts = allPosts
 </BaseLayout>
 
 <script>
-  // Top Reading Progress
+  // 1. Top Reading Progress Bar
   window.addEventListener('scroll', () => {
     const progressBar = document.getElementById('reading-progress');
     const article = document.querySelector('.article-body');
     if (progressBar && article) {
       const totalHeight = article.clientHeight;
+      const windowHeight = window.innerHeight;
       const articleOffsetTop = article.getBoundingClientRect().top + window.scrollY;
       const currentScroll = window.scrollY - articleOffsetTop;
 
       if (currentScroll > 0) {
-        const progress = Math.min(100, Math.max(0, (currentScroll / (totalHeight - window.innerHeight + 100)) * 100));
+        const progress = Math.min(100, Math.max(0, (currentScroll / (totalHeight - windowHeight + 100)) * 100));
         progressBar.style.width = `${progress}%`;
       } else {
         progressBar.style.width = '0%';
@@ -273,7 +309,7 @@ const relatedPosts = allPosts
     }
   });
 
-  // Copy Link Handler
+  // 2. Quick Copy URL Link
   const copyBtn = document.getElementById('copyLinkBtn');
   const tooltip = document.getElementById('copyTooltip');
   if (copyBtn && tooltip) {
@@ -283,10 +319,72 @@ const relatedPosts = allPosts
         tooltip.classList.add('visible');
         setTimeout(() => tooltip.classList.remove('visible'), 2000);
       } catch (err) {
-        console.error('Copy failed', err);
+        console.error('Failed to copy link', err);
       }
     });
   }
+
+  // 3. Key Insights TOC Builder with Smooth Scroll & Active ScrollSpy
+  document.addEventListener('DOMContentLoaded', () => {
+    const article = document.querySelector('.article-body');
+    const tocWidget = document.getElementById('toc-widget');
+    const tocList = document.getElementById('toc-list');
+
+    if (!article || !tocWidget || !tocList) return;
+
+    const headings = article.querySelectorAll('h2, h3');
+
+    if (headings.length === 0) {
+      tocWidget.style.display = 'none';
+      return;
+    }
+
+    headings.forEach((heading, index) => {
+      let id = heading.id;
+      if (!id) {
+        id = heading.textContent?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `section-${index}`;
+        heading.id = id;
+      }
+
+      const link = document.createElement('a');
+      link.href = `#${id}`;
+      link.textContent = heading.textContent;
+      link.className = heading.tagName.toLowerCase() === 'h3' ? 'toc-link toc-subheading' : 'toc-link toc-heading';
+
+      // Smooth scroll on click
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(id);
+        if (target) {
+          const headerOffset = 80;
+          const elementPosition = target.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.scrollY - headerOffset;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+          history.pushState(null, '', `#${id}`);
+        }
+      });
+
+      tocList.appendChild(link);
+    });
+
+    // ScrollSpy active highlight
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          document.querySelectorAll('.toc-link').forEach((item) => {
+            item.classList.toggle('active', item.getAttribute('href') === `#${id}`);
+          });
+        }
+      });
+    }, { rootMargin: '0px 0px -70% 0px' });
+
+    headings.forEach((h) => observer.observe(h));
+  });
 </script>
 
 <style>
@@ -309,7 +407,7 @@ const relatedPosts = allPosts
     --bg-page: #fafbfc;
   }
 
-  /* Progress Bar */
+  /* Reading Progress Bar */
   .reading-progress-bar {
     position: fixed;
     top: 0;
@@ -321,11 +419,11 @@ const relatedPosts = allPosts
     transition: width 0.08s ease-out;
   }
 
-  /* Container & Spacing Reductions */
+  /* Layout Container */
   .blog-wrapper {
     background-color: var(--bg-page);
     color: var(--text-body);
-    padding: 0.75rem 0 2rem; /* Reduced extra top/bottom space */
+    padding: 0.75rem 0 2rem;
   }
 
   .container {
@@ -339,12 +437,12 @@ const relatedPosts = allPosts
     font-size: 0.82rem;
   }
 
-  /* Grid Layout: Main Article + Sticky Sidebar */
+  /* Grid Layout */
   .page-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 310px;
     gap: 2rem;
-    align-items: start; /* Essential for CSS sticky sidebar */
+    align-items: start;
   }
 
   .content-col {
@@ -356,7 +454,7 @@ const relatedPosts = allPosts
   }
 
   /* ==========================================================
-     ARTICLE HEADER & TITLE (Optimized Typography)
+     ARTICLE HEADER & AUTHOR PROFILE LINK
   ========================================================== */
   .article-header {
     margin-bottom: 1.25rem;
@@ -380,6 +478,12 @@ const relatedPosts = allPosts
     letter-spacing: 0.04em;
     padding: 0.2rem 0.6rem;
     border-radius: 6px;
+    text-decoration: none;
+    transition: background 0.15s ease;
+  }
+
+  .category-badge:hover {
+    background: var(--green-100);
   }
 
   .read-time-pill,
@@ -393,7 +497,7 @@ const relatedPosts = allPosts
   }
 
   .article-title {
-    font-size: clamp(1.65rem, 2.7vw, 2.25rem); /* Balanced headline size */
+    font-size: clamp(1.65rem, 2.7vw, 2.25rem);
     font-weight: 800;
     line-height: 1.25;
     letter-spacing: -0.025em;
@@ -408,7 +512,7 @@ const relatedPosts = allPosts
     margin: 0 0 1rem 0;
   }
 
-  /* Author Strip + Quick Share */
+  /* Author Link & Quick Share Strip */
   .article-meta-strip {
     display: flex;
     justify-content: space-between;
@@ -423,21 +527,34 @@ const relatedPosts = allPosts
   .author-inline {
     display: flex;
     align-items: center;
+  }
+
+  .author-profile-link {
+    display: flex;
+    align-items: center;
     gap: 0.6rem;
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .author-profile-link:hover .author-name-text {
+    color: var(--green-600);
+    text-decoration: underline;
   }
 
   .author-avatar-sm {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     background: var(--green-50);
-    border: 1px solid var(--green-200);
+    border: 1.5px solid var(--green-200);
     color: var(--green-700);
     font-weight: 700;
     display: grid;
     place-items: center;
     overflow: hidden;
     font-size: 0.85rem;
+    flex-shrink: 0;
   }
 
   .author-avatar-sm img {
@@ -446,17 +563,23 @@ const relatedPosts = allPosts
     object-fit: cover;
   }
 
+  .author-text-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+  }
+
   .byline {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
-    display: block;
     line-height: 1.1;
   }
 
   .author-name-text {
-    font-size: 0.85rem;
+    font-size: 0.86rem;
     font-weight: 700;
     color: var(--text-main);
+    transition: color 0.15s ease;
   }
 
   .quick-share {
@@ -558,6 +681,7 @@ const relatedPosts = allPosts
     padding-bottom: 0.35rem;
     border-bottom: 2px solid var(--green-50);
     letter-spacing: -0.015em;
+    scroll-margin-top: 5.5rem;
   }
 
   :global(.article-body h3) {
@@ -566,6 +690,7 @@ const relatedPosts = allPosts
     color: var(--text-main);
     line-height: 1.35;
     margin: 1.35rem 0 0.5rem;
+    scroll-margin-top: 5.5rem;
   }
 
   :global(.article-body ul),
@@ -598,7 +723,6 @@ const relatedPosts = allPosts
     margin: 0;
   }
 
-  /* Custom Green Callout Boxes inside Markdown */
   :global(.article-body .callout) {
     background: var(--green-50);
     border: 1px solid var(--green-200);
@@ -639,26 +763,6 @@ const relatedPosts = allPosts
     overflow-x: auto;
     margin: 1.25rem 0;
     font-size: 0.88rem;
-  }
-
-  :global(.article-body table) {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1.35rem 0;
-    font-size: 0.9rem;
-  }
-
-  :global(.article-body th),
-  :global(.article-body td) {
-    padding: 0.55rem 0.75rem;
-    border: 1px solid var(--border-light);
-    text-align: left;
-  }
-
-  :global(.article-body th) {
-    background: var(--green-50);
-    color: var(--green-800);
-    font-weight: 700;
   }
 
   /* Tags */
@@ -756,19 +860,28 @@ const relatedPosts = allPosts
     color: var(--green-600);
   }
 
+  .author-section {
+    margin-top: 1.5rem;
+  }
+
   /* ==========================================================
-     STICKY SIDEBAR WITH FOUNDER PROFILE
+     STICKY SIDEBAR IMPLEMENTATION (Key Insights + Categories + You May Like)
   ========================================================== */
   .sidebar-col {
     position: relative;
+    width: 100%;
   }
 
   .sticky-sidebar {
     position: sticky;
-    top: 1.25rem; /* Sticks smoothly while scrolling */
+    top: 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.15rem;
+    max-height: calc(100vh - 2.5rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--green-200) transparent;
   }
 
   .sidebar-widget {
@@ -779,110 +892,74 @@ const relatedPosts = allPosts
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   }
 
-  /* Author Card Widget */
-  .author-card-widget {
-    position: relative;
-    border-top: 3px solid var(--green-600);
-  }
-
-  .widget-badge {
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--green-700);
-    letter-spacing: 0.05em;
-    margin-bottom: 0.65rem;
-  }
-
-  .author-card-header {
+  .widget-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.6rem;
+    gap: 0.45rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border-light);
   }
 
-  .author-avatar-lg {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: var(--green-50);
-    border: 1.5px solid var(--green-200);
-    color: var(--green-700);
-    font-weight: 700;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    font-size: 1.15rem;
-    flex-shrink: 0;
+  .widget-icon {
+    font-size: 1rem;
   }
 
-  .author-avatar-lg img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .author-title-name {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--text-main);
-    line-height: 1.2;
-  }
-
-  .founder-badge {
-    display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--green-700);
-    background: var(--green-50);
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-    margin-top: 0.2rem;
-  }
-
-  .author-bio-text {
-    font-size: 0.8rem;
-    line-height: 1.45;
-    color: var(--text-body);
-    margin: 0.45rem 0 0.75rem;
-  }
-
-  .author-social-links {
-    display: flex;
-    gap: 0.4rem;
-    border-top: 1px solid var(--border-light);
-    padding-top: 0.65rem;
-  }
-
-  .social-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    background: #f8fafc;
-    border: 1px solid var(--border-light);
-    color: var(--text-muted);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    transition: all 0.15s ease;
-  }
-
-  .social-icon:hover {
-    background: var(--green-600);
-    color: #ffffff;
-    border-color: var(--green-600);
-  }
-
-  /* Explore Topics */
   .widget-title {
-    margin: 0 0 0.5rem;
+    margin: 0;
     font-size: 0.9rem;
     font-weight: 700;
     color: var(--text-main);
   }
 
+  /* 1. Key Insights (TOC) */
+  .key-insights-widget {
+    border-top: 3px solid var(--green-600);
+  }
+
+  .toc-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+
+  :global(.toc-link) {
+    font-size: 0.82rem;
+    color: #475569;
+    text-decoration: none;
+    line-height: 1.35;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    border-left: 2px solid transparent;
+    transition: all 0.15s ease;
+  }
+
+  :global(.toc-link:hover) {
+    background: var(--green-50);
+    color: var(--green-600);
+  }
+
+  :global(.toc-link.active) {
+    background: var(--green-50);
+    color: var(--green-800);
+    font-weight: 700;
+    border-left-color: var(--green-600);
+  }
+
+  :global(.toc-heading) {
+    font-weight: 600;
+  }
+
+  :global(.toc-subheading) {
+    padding-left: 1.15rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  /* 2. Categories with Counts */
   .clean-category-list {
     list-style: none;
     margin: 0;
@@ -911,74 +988,86 @@ const relatedPosts = allPosts
     padding-left: 0.75rem;
   }
 
-  .clean-category-list .arrow {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-  }
-
-  /* Newsletter */
-  .newsletter-widget {
-    background: linear-gradient(135deg, var(--green-50) 0%, #ffffff 100%);
+  .cat-count {
+    background: var(--green-50);
+    color: var(--green-700);
     border: 1px solid var(--green-200);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 12px;
   }
 
-  .widget-header {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 0.35rem;
-  }
-
-  .pulse-dot {
-    width: 7px;
-    height: 7px;
-    background: var(--green-600);
-    border-radius: 50%;
-    box-shadow: 0 0 0 2px var(--green-200);
-  }
-
-  .newsletter-widget p {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    margin: 0 0 0.65rem;
-    line-height: 1.4;
-  }
-
-  .mini-form {
+  /* 3. You May Also Like Mini Cards */
+  .mini-post-list {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.75rem;
   }
 
-  .mini-form input {
-    padding: 0.45rem 0.65rem;
+  .mini-post-card {
+    display: flex;
+    gap: 0.65rem;
+    text-decoration: none;
+    align-items: center;
+    padding: 0.35rem;
     border-radius: 6px;
-    border: 1px solid #cbd5e1;
+    transition: background 0.15s ease;
+  }
+
+  .mini-post-card:hover {
+    background: var(--green-50);
+  }
+
+  .mini-post-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f1f5f9;
+  }
+
+  .mini-post-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .mini-post-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    overflow: hidden;
+  }
+
+  .mini-post-category {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--green-600);
+    text-transform: uppercase;
+  }
+
+  .mini-post-title {
+    margin: 0;
     font-size: 0.8rem;
-    outline: none;
-  }
-
-  .mini-form input:focus {
-    border-color: var(--green-600);
-  }
-
-  .mini-form button {
-    background: var(--green-600);
-    color: #ffffff;
+    line-height: 1.3;
     font-weight: 600;
-    font-size: 0.8rem;
-    padding: 0.45rem;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    transition: background 0.15s;
+    color: var(--text-main);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 0.15s ease;
   }
 
-  .mini-form button:hover {
-    background: var(--green-700);
+  .mini-post-card:hover .mini-post-title {
+    color: var(--green-600);
   }
 
-  /* Related Posts */
+  /* ==========================================================
+     RELATED POSTS GRID
+  ========================================================== */
   .related-posts {
     margin-top: 1.75rem;
     padding-top: 1.25rem;
@@ -1019,6 +1108,12 @@ const relatedPosts = allPosts
     background: #ffffff;
     display: flex;
     flex-direction: column;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .modern-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
 
   .card-thumb img {
@@ -1055,6 +1150,10 @@ const relatedPosts = allPosts
     text-decoration: none;
   }
 
+  .card-title a:hover {
+    color: var(--green-600);
+  }
+
   .card-date {
     font-size: 0.7rem;
     color: var(--text-muted);
@@ -1072,6 +1171,7 @@ const relatedPosts = allPosts
     }
     .sticky-sidebar {
       position: static;
+      max-height: none;
     }
     .post-grid {
       grid-template-columns: 1fr;
