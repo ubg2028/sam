@@ -1,0 +1,60 @@
+---
+// src/pages/blog/index.astro
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import { getAuthorBySlug } from '../../data/authors';
+
+const allPosts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+const categories = [...new Set(allPosts.map((p) => p.data.category))];
+---
+<BaseLayout title="Blog" description="Every essay published on Verdant Notes, newest first." currentPath="/blog">
+  <div class="container">
+    <Breadcrumb items={[{ label: 'Blog' }]} />
+
+    <div class="page-layout">
+      <div class="content-col">
+        <div class="section-heading">
+          <h1 style="font-size:var(--step-4);margin:0;">All Posts</h1>
+        </div>
+
+        <div class="post-grid">
+          {allPosts.map((post, i) => (
+            <>
+              <article class="post-card">
+                <a href={`/blog/${post.slug}`} class="post-card-media" aria-hidden="true">
+                  {post.data.image ? <img src={post.data.image} alt="" loading="lazy" width="400" height="250" /> : null}
+                </a>
+                <span class="post-card-category">{post.data.category}</span>
+                <h3><a href={`/blog/${post.slug}`}>{post.data.title}</a></h3>
+                <p>{post.data.description}</p>
+                <p class="post-card-meta">{getAuthorBySlug(post.data.authorSlug)?.name} &middot; {dateFormatter.format(post.data.pubDate)}</p>
+              </article>
+              {i === 3 && (
+                <div class="ad-slot ad-slot--in-feed" role="complementary" aria-label="Advertisement">
+                  <p class="ad-label">Advertisement</p>
+                  <p class="ad-placeholder-note">In-feed native ad placeholder</p>
+                </div>
+              )}
+            </>
+          ))}
+        </div>
+      </div>
+
+      <aside class="sidebar" aria-label="Sidebar">
+        <div class="widget">
+          <h3>Categories</h3>
+          <ul class="category-list">
+            {categories.map((cat) => <li><a href="/blog">{cat}</a></li>)}
+          </ul>
+        </div>
+        <AdSlot position="sidebar" />
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

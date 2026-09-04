@@ -1,0 +1,55 @@
+---
+// src/components/AdSlot.astro
+//
+// A single, reusable, AdSense-compliant ad container. Always renders a small
+// muted "Advertisement" (or "Sponsored") label above the ad area, separated
+// from surrounding content with a dashed border so it's never mistaken for
+// content or navigation.
+//
+// Usage:
+//   <AdSlot position="top" />
+//   <AdSlot position="in-article" />
+//   <AdSlot position="in-feed" />
+//   <AdSlot position="sidebar" />
+//
+// Once your AdSense account is approved, replace the placeholder <p> below
+// with your real <ins class="adsbygoogle"> unit and add the adsbygoogle.js
+// loader script in BaseLayout.astro. Keep the wrapper markup (the label and
+// .ad-slot classes) as-is — it's what keeps ads clearly separated from content.
+
+export interface Props {
+  position?: 'top' | 'in-article' | 'in-feed' | 'sidebar' | 'leaderboard';
+  label?: 'Advertisement' | 'Sponsored';
+}
+
+const { position = 'in-article', label = 'Advertisement' } = Astro.props;
+
+const sizeNote: Record<string, string> = {
+  top: '728×90 leaderboard placeholder',
+  leaderboard: '728×90 leaderboard placeholder',
+  'in-article': 'In-article responsive ad placeholder',
+  'in-feed': 'In-feed native ad placeholder',
+  sidebar: '300×250 ad placeholder',
+};
+
+const modifierClass: Record<string, string> = {
+  top: 'ad-slot--leaderboard',
+  leaderboard: 'ad-slot--leaderboard',
+  'in-article': 'ad-slot--in-article',
+  'in-feed': 'ad-slot--in-feed',
+  sidebar: 'ad-slot--sidebar',
+};
+---
+<div class={`ad-slot ${modifierClass[position]}`} role="complementary" aria-label={label} data-ad-position={position}>
+  <p class="ad-label">{label}</p>
+  <p class="ad-placeholder-note">{sizeNote[position]}</p>
+  <!--
+    Replace the two <p> tags above with your ad unit, e.g.:
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="XXXXXXXXXX"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+  -->
+</div>

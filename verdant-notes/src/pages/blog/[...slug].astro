@@ -1,0 +1,28 @@
+---
+// src/pages/blog/[...slug].astro
+//
+// Renders every entry in src/content/blog/ automatically. Drop a new
+// post-name.md file into that folder with valid frontmatter (see
+// src/content/config.ts) and a page at /blog/post-name appears on the next
+// build — no other code changes required.
+import { getCollection, type CollectionEntry } from 'astro:content';
+import PostLayout from '../../layouts/PostLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+---
+<PostLayout post={post}>
+  <Content />
+</PostLayout>

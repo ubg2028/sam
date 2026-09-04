@@ -1,0 +1,76 @@
+---
+// src/pages/about.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+---
+<BaseLayout
+  title="About"
+  description="Verdant Notes is written by a small team of working writers and engineers. Learn who we are, how we research and fact-check our work, and how to reach us."
+  currentPath="/about"
+>
+  <div class="container">
+    <Breadcrumb items={[{ label: 'About' }]} />
+  </div>
+
+  <section class="about-hero">
+    <div class="container">
+      <h1>We write about what we've actually tried</h1>
+      <p style="font-size:1.1rem;color:var(--color-text-secondary);">
+        Verdant Notes is a small, independent publication covering technology, work, and sustainable living. We started it
+        in 2023 because we were tired of reading advice from people who had clearly never done the thing they were writing about.
+      </p>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="legal-page" style="max-width:var(--measure);">
+      <h2>Our story</h2>
+      <p>
+        Verdant Notes began as a shared document between three former colleagues — a product designer, a backend engineer,
+        and a business journalist — who kept sending each other drafts of things they wished existed. What started as a
+        handful of essays passed around a group chat grew into a weekly publication with a small, dedicated readership.
+      </p>
+      <p>
+        We are not a content farm. Every writer on this site works, or has recently worked, in the field they cover. We
+        publish roughly two to three pieces a week, and we'd rather publish nothing than publish something we haven't verified.
+      </p>
+
+      <h2>How we work</h2>
+      <div class="eeat-grid">
+        <div class="eeat-card">
+          <h3>Experience</h3>
+          <p>Every piece is written or reviewed by someone with direct, hands-on experience in the subject — not a generalist writer researching a topic cold.</p>
+        </div>
+        <div class="eeat-card">
+          <h3>Expertise</h3>
+          <p>Our contributors hold relevant professional backgrounds in software engineering, product design, and business journalism — see full profiles on our <a href="/team">editorial team page</a>.</p>
+        </div>
+        <div class="eeat-card">
+          <h3>Authoritativeness</h3>
+          <p>We cite primary sources, link to the data behind our claims, and correct the record publicly when we get something wrong.</p>
+        </div>
+        <div class="eeat-card">
+          <h3>Trustworthiness</h3>
+          <p>Sponsored content is always labeled. Affiliate relationships are disclosed. See our <a href="/disclaimer">disclaimer</a> for details.</p>
+        </div>
+      </div>
+
+      <h2>Editorial standards</h2>
+      <ul>
+        <li>Every factual claim is checked against at least one primary source before publication.</li>
+        <li>We disclose any product relationships, free access, or compensation connected to a review — see our <a href="/disclaimer">disclaimer page</a>.</li>
+        <li>Corrections are posted at the bottom of the original article with a visible timestamp, not silently edited.</li>
+        <li>We do not accept payment in exchange for favorable coverage.</li>
+      </ul>
+
+      <h2>Meet the people behind Verdant Notes</h2>
+      <p>Every article is written or reviewed by a named member of our editorial team. Visit our <a href="/team">Editorial Team page</a> for full author profiles, credentials, and contact details.</p>
+
+      <h2>Get in touch</h2>
+      <p>
+        Have a correction, a story tip, or a question about something we published? We read every message. Visit our
+        <a href="/contact">contact page</a> or email us directly at <a href="mailto:hello@example.com">hello@example.com</a>.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

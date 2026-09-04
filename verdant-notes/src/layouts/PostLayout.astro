@@ -1,0 +1,132 @@
+---
+// src/layouts/PostLayout.astro
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import AdSlot from '../components/AdSlot.astro';
+import AuthorBio from '../components/AuthorBio.astro';
+import { getAuthorBySlug } from '../data/authors';
+
+export interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { title, description, pubDate, updatedDate, authorSlug, category, tags, image, imageAlt } = post.data;
+const author = getAuthorBySlug(authorSlug);
+
+const wordsPerMinute = 200;
+const wordCount = post.body.split(/\s+/g).length;
+const readingTime = Math.max(1, Math.round(wordCount / wordsPerMinute));
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const relatedPosts = allPosts
+  .filter((p) => p.slug !== post.slug && p.data.category === category)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+---
+<BaseLayout
+  title={title}
+  description={description}
+  currentPath={`/blog/${post.slug}`}
+  type="article"
+  publishedTime={pubDate}
+  author={author?.name}
+  image={image}
+>
+  <slot name="head" slot="head" />
+
+  <div class="container">
+    <Breadcrumb items={[{ label: 'Blog', href: '/blog' }, { label: title }]} />
+
+    <div class="page-layout">
+      <div class="content-col">
+        <article>
+          <header class="article-header">
+            <h1>{title}</h1>
+            <div class="article-meta">
+              <span class="category-badge">{category}</span>
+              {author && <span>By <a href={`/team/${author.slug}`}>{author.name}</a></span>}
+              <span>&middot;</span>
+              <time datetime={pubDate.toISOString()}>{dateFormatter.format(pubDate)}</time>
+              {updatedDate && (
+                <>
+                  <span>&middot;</span>
+                  <span>Updated {dateFormatter.format(updatedDate)}</span>
+                </>
+              )}
+              <span>&middot;</span>
+              <span>{readingTime} min read</span>
+            </div>
+          </header>
+
+          {image && (
+            <div class="article-featured-media">
+              <img src={image} alt={imageAlt ?? ''} width="1200" height="675" loading="eager" />
+            </div>
+          )}
+
+          <AdSlot position="top" />
+
+          <div class="article-body">
+            <slot />
+          </div>
+
+          <AdSlot position="in-article" />
+
+          {tags && tags.length > 0 && (
+            <div class="article-tags">
+              {tags.map((tag: string) => (
+                <a href={`/blog?tag=${encodeURIComponent(tag)}`}>#{tag}</a>
+              ))}
+            </div>
+          )}
+
+          <div class="share-row">
+            <span>Share:</span>
+            <a href={`https://x.com/intent/tweet?url=${Astro.url}`} aria-label="Share on X" rel="noopener noreferrer" target="_blank">X</a>
+            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`} aria-label="Share on LinkedIn" rel="noopener noreferrer" target="_blank">in</a>
+            <a href={`mailto:?subject=${encodeURIComponent(title)}&body=${Astro.url}`} aria-label="Share via email">@</a>
+          </div>
+
+          {author && <AuthorBio authorSlug={author.slug} />}
+
+          <AdSlot position="in-article" />
+        </article>
+
+        {relatedPosts.length > 0 && (
+          <section class="related-posts" aria-label="Related posts">
+            <div class="section-heading">
+              <h2>Related Posts</h2>
+            </div>
+            <div class="post-grid">
+              {relatedPosts.map((related) => (
+                <article class="post-card">
+                  <a href={`/blog/${related.slug}`} class="post-card-media" aria-hidden="true">
+                    {related.data.image ? <img src={related.data.image} alt="" loading="lazy" width="400" height="250" /> : null}
+                  </a>
+                  <span class="post-card-category">{related.data.category}</span>
+                  <h3><a href={`/blog/${related.slug}`}>{related.data.title}</a></h3>
+                  <p class="post-card-meta">{getAuthorBySlug(related.data.authorSlug)?.name} &middot; {dateFormatter.format(related.data.pubDate)}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+
+      <aside class="sidebar" aria-label="Sidebar">
+        <div class="widget">
+          <h3>Categories</h3>
+          <ul class="category-list">
+            <li><a href="/blog">Technology</a></li>
+            <li><a href="/blog">Work &amp; Life</a></li>
+          </ul>
+        </div>
+        <AdSlot position="sidebar" />
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

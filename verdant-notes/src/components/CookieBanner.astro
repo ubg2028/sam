@@ -1,0 +1,67 @@
+---
+// src/components/CookieBanner.astro
+//
+// Lightweight GDPR/ePrivacy-style cookie consent banner. No dependencies —
+// pure HTML plus one small inline script. Stores the choice in localStorage
+// so it only shows once per browser until cleared.
+---
+<div
+  class="cookie-consent"
+  id="cookie-consent"
+  role="dialog"
+  aria-label="Cookie consent"
+  aria-describedby="cookie-consent-text"
+>
+  <div class="container">
+    <p class="cookie-text" id="cookie-consent-text">
+      We use cookies to analyze traffic and personalize ads, including through Google and its partners. Read our
+      <a href="/privacy-policy">Privacy Policy</a> or our <a href="/gdpr">GDPR page</a> to learn more.
+    </p>
+    <div class="cookie-actions">
+      <button type="button" class="btn-cookie-reject" id="cookie-reject">Reject non-essential</button>
+      <button type="button" class="btn-cookie-accept" id="cookie-accept">Accept all</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const CONSENT_KEY = 'verdant_notes_cookie_consent';
+
+  const banner = document.getElementById('cookie-consent');
+  const acceptBtn = document.getElementById('cookie-accept');
+  const rejectBtn = document.getElementById('cookie-reject');
+
+  function getConsent(): string | null {
+    try {
+      return localStorage.getItem(CONSENT_KEY);
+    } catch {
+      return null;
+    }
+  }
+
+  function setConsent(value: string) {
+    try {
+      localStorage.setItem(CONSENT_KEY, value);
+    } catch {
+      /* storage unavailable — banner will simply reappear next visit */
+    }
+  }
+
+  if (banner) {
+    if (!getConsent()) {
+      window.setTimeout(() => banner.classList.add('is-visible'), 600);
+    }
+
+    acceptBtn?.addEventListener('click', () => {
+      setConsent('accepted');
+      banner.classList.remove('is-visible');
+      document.dispatchEvent(new CustomEvent('verdant:consent-changed', { detail: { consent: 'accepted' } }));
+    });
+
+    rejectBtn?.addEventListener('click', () => {
+      setConsent('rejected');
+      banner.classList.remove('is-visible');
+      document.dispatchEvent(new CustomEvent('verdant:consent-changed', { detail: { consent: 'rejected' } }));
+    });
+  }
+</script>

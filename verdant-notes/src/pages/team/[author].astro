@@ -1,0 +1,84 @@
+---
+// src/pages/team/[author].astro
+//
+// Generates a full profile page for every entry in src/data/authors.ts —
+// e.g. /team/asha-fenn. Add a new writer by adding an entry to that file;
+// no other code changes are needed.
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import { authors, type Author } from '../../data/authors';
+
+export async function getStaticPaths() {
+  return authors.map((author) => ({
+    params: { author: author.slug },
+    props: { author },
+  }));
+}
+
+interface Props {
+  author: Author;
+}
+
+const { author } = Astro.props;
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const authorPosts = allPosts
+  .filter((p) => p.data.authorSlug === author.slug)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+---
+<BaseLayout
+  title={author.name}
+  description={author.bio}
+  currentPath={`/team/${author.slug}`}
+  type="profile"
+>
+  <div class="container">
+    <Breadcrumb items={[{ label: 'Editorial Team', href: '/team' }, { label: author.name }]} />
+  </div>
+
+  <div class="container">
+    <div class="author-profile-header">
+      <div class="author-profile-avatar" aria-hidden="true">{author.avatarInitials}</div>
+      <div>
+        <h1 style="margin-bottom:0.2em;">{author.name}</h1>
+        <p style="color:var(--color-accent-dark);font-weight:600;margin-bottom:0.4em;">{author.role}</p>
+        <div class="expertise-tags" style="justify-content:flex-start;">
+          {author.expertise.map((tag) => <span>{tag}</span>)}
+        </div>
+        <div class="author-profile-social">
+          {author.email && <a href={`mailto:${author.email}`} aria-label={`Email ${author.name}`}>@</a>}
+          {author.twitter && <a href={author.twitter} target="_blank" rel="noopener noreferrer" aria-label={`${author.name} on X`}>X</a>}
+          {author.linkedin && <a href={author.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${author.name} on LinkedIn`}>in</a>}
+        </div>
+      </div>
+    </div>
+
+    <div class="legal-page" style="max-width:var(--measure);padding-top:var(--space-4);">
+      <h2 style="font-size:1.3rem;">About {author.name.split(' ')[0]}</h2>
+      <p>{author.longBio}</p>
+    </div>
+
+    {authorPosts.length > 0 && (
+      <section class="related-posts" aria-label={`Posts by ${author.name}`} style="padding-bottom:var(--space-5);">
+        <div class="section-heading">
+          <h2>Articles by {author.name}</h2>
+        </div>
+        <div class="post-grid">
+          {authorPosts.map((post) => (
+            <article class="post-card">
+              <a href={`/blog/${post.slug}`} class="post-card-media" aria-hidden="true">
+                {post.data.image ? <img src={post.data.image} alt="" loading="lazy" width="400" height="250" /> : null}
+              </a>
+              <span class="post-card-category">{post.data.category}</span>
+              <h3><a href={`/blog/${post.slug}`}>{post.data.title}</a></h3>
+              <p class="post-card-meta">{dateFormatter.format(post.data.pubDate)}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    )}
+  </div>
+</BaseLayout>

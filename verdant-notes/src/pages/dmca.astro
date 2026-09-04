@@ -1,0 +1,55 @@
+---
+// src/pages/dmca.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+---
+<BaseLayout
+  title="DMCA Policy"
+  description="Verdant Notes' DMCA copyright policy and takedown notice procedure."
+  currentPath="/dmca"
+  noindex={true}
+>
+  <div class="container">
+    <Breadcrumb items={[{ label: 'DMCA' }]} />
+
+    <div class="legal-page">
+      <h1>DMCA Policy</h1>
+      <p class="legal-updated">Last updated: September 4, 2026</p>
+
+      <p>Verdant Notes Media respects the intellectual property rights of others and expects its contributors to do the same. This page explains our policy under the Digital Millennium Copyright Act (DMCA) for addressing claims of copyright infringement.</p>
+
+      <h2>1. Filing a takedown notice</h2>
+      <p>If you believe content on this Site infringes your copyright, please send a written notice to our designated agent, including all of the following:</p>
+      <ul>
+        <li>A physical or electronic signature of the copyright owner or a person authorized to act on their behalf.</li>
+        <li>Identification of the copyrighted work claimed to have been infringed.</li>
+        <li>Identification of the material you claim is infringing, with enough detail (e.g. a URL) that we can locate it.</li>
+        <li>Your contact information — address, telephone number, and email address.</li>
+        <li>A statement that you have a good-faith belief that the disputed use is not authorized by the copyright owner, its agent, or the law.</li>
+        <li>A statement, made under penalty of perjury, that the information in the notice is accurate and that you are authorized to act on behalf of the copyright owner.</li>
+      </ul>
+
+      <h2>2. Designated agent</h2>
+      <p>Send DMCA notices to: <a href="mailto:dmca@example.com">dmca@example.com</a>, or by mail to Verdant Notes Media, 221 Willow Street, Suite 4B, Portland, OR 97201, United States, Attn: DMCA Agent.</p>
+
+      <h2>3. Our response process</h2>
+      <p>Upon receiving a valid notice, we will act expeditiously to remove or disable access to the allegedly infringing material and will make a reasonable effort to notify the party who posted or is responsible for the content.</p>
+
+      <h2>4. Counter-notification</h2>
+      <p>If you believe material you posted was removed in error, you may submit a counter-notice containing:</p>
+      <ul>
+        <li>Your physical or electronic signature.</li>
+        <li>Identification of the material removed and its location before removal.</li>
+        <li>A statement, under penalty of perjury, that you have a good-faith belief the material was removed as a result of mistake or misidentification.</li>
+        <li>Your name, address, and telephone number, and a statement consenting to the jurisdiction of the federal court in your district.</li>
+      </ul>
+      <p>Upon receiving a valid counter-notice, we may restore the material within 10–14 business days unless the original complainant files a court action.</p>
+
+      <h2>5. Repeat infringers</h2>
+      <p>We reserve the right to remove content and, where appropriate, terminate accounts of users who are repeat infringers.</p>
+
+      <h2>6. Related pages</h2>
+      <p>See our <a href="/terms">Terms &amp; Conditions</a> for our general intellectual property policy and our <a href="/privacy-policy">Privacy Policy</a> for how we handle personal data submitted in a DMCA notice.</p>
+    </div>
+  </div>
+</BaseLayout>

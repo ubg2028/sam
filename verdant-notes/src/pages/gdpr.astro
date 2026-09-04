@@ -1,0 +1,56 @@
+---
+// src/pages/gdpr.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+---
+<BaseLayout
+  title="GDPR"
+  description="How Verdant Notes complies with the EU General Data Protection Regulation, including the legal basis for processing and how to exercise your data rights."
+  currentPath="/gdpr"
+  noindex={true}
+>
+  <div class="container">
+    <Breadcrumb items={[{ label: 'GDPR' }]} />
+
+    <div class="legal-page">
+      <h1>GDPR Compliance</h1>
+      <p class="legal-updated">Last updated: September 4, 2026</p>
+
+      <p>This page explains how Verdant Notes Media handles personal data of visitors located in the European Economic Area (EEA) and the United Kingdom, in line with the General Data Protection Regulation (GDPR) and the UK GDPR. It should be read alongside our <a href="/privacy-policy">Privacy Policy</a>.</p>
+
+      <h2>1. Data controller</h2>
+      <p>For the purposes of the GDPR, Verdant Notes Media, 221 Willow Street, Suite 4B, Portland, OR 97201, United States, is the data controller for personal data collected through this Site. You can reach our privacy contact at <a href="mailto:privacy@example.com">privacy@example.com</a>.</p>
+
+      <h2>2. Legal basis for processing</h2>
+      <ul>
+        <li><strong>Consent</strong> — for non-essential cookies and personalized advertising, gathered through our cookie consent banner.</li>
+        <li><strong>Legitimate interest</strong> — for basic analytics and site security, such as log file analysis to detect abuse.</li>
+        <li><strong>Contract / request</strong> — when you submit our contact form, we process your details to respond to your inquiry.</li>
+      </ul>
+
+      <h2>3. Your rights under GDPR</h2>
+      <p>If you are located in the EEA or UK, you have the right to:</p>
+      <ul>
+        <li><strong>Access</strong> — request a copy of the personal data we hold about you.</li>
+        <li><strong>Rectification</strong> — request correction of inaccurate or incomplete data.</li>
+        <li><strong>Erasure</strong> — request deletion of your personal data ("right to be forgotten").</li>
+        <li><strong>Restriction</strong> — request that we limit how we process your data.</li>
+        <li><strong>Data portability</strong> — request your data in a structured, commonly used format.</li>
+        <li><strong>Object</strong> — object to processing based on legitimate interest, including for direct marketing.</li>
+        <li><strong>Withdraw consent</strong> — withdraw previously given consent (e.g. for personalized ads) at any time, without affecting processing carried out before withdrawal.</li>
+      </ul>
+
+      <h2>4. How to exercise your rights</h2>
+      <p>Email <a href="mailto:privacy@example.com">privacy@example.com</a> or use our <a href="/contact">Contact page</a> with the subject line "GDPR Request." We will verify your identity and respond within one month, as required by law. You can also adjust your cookie/ad-personalization consent at any time via the cookie banner on this Site.</p>
+
+      <h2>5. International data transfers</h2>
+      <p>Some of our third-party service providers, including Google (for advertising and analytics), may process data outside the EEA/UK. Where this occurs, we rely on the provider's own GDPR-compliance mechanisms, such as Standard Contractual Clauses, as described in their respective privacy policies.</p>
+
+      <h2>6. Right to lodge a complaint</h2>
+      <p>If you believe we have not handled your personal data in accordance with the GDPR, you have the right to lodge a complaint with your local data protection supervisory authority.</p>
+
+      <h2>7. Related pages</h2>
+      <p>See our <a href="/privacy-policy">Privacy Policy</a> for details on cookies and third-party advertising vendors, and our <a href="/dmca">DMCA Policy</a> for copyright-related requests.</p>
+    </div>
+  </div>
+</BaseLayout>

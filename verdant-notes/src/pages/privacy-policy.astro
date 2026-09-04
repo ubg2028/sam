@@ -1,0 +1,74 @@
+---
+// src/pages/privacy-policy.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+---
+<BaseLayout
+  title="Privacy Policy"
+  description="Verdant Notes' privacy policy: what data we collect, how Google and third-party advertising vendors use cookies, and your rights."
+  currentPath="/privacy-policy"
+  noindex={true}
+>
+  <div class="container">
+    <Breadcrumb items={[{ label: 'Privacy Policy' }]} />
+
+    <div class="legal-page">
+      <h1>Privacy Policy</h1>
+      <p class="legal-updated">Last updated: September 4, 2026</p>
+
+      <p>This Privacy Policy explains how Verdant Notes Media ("Verdant Notes," "we," "us," or "our") collects, uses, and shares information when you visit verdantnotes.example (the "Site"). By using the Site, you agree to the collection and use of information in accordance with this policy.</p>
+
+      <div class="toc">
+        <h2>On this page</h2>
+        <ol>
+          <li><a href="#info-we-collect">Information we collect</a></li>
+          <li><a href="#log-files">Log files</a></li>
+          <li><a href="#cookies">Cookies and similar technologies</a></li>
+          <li><a href="#advertising">Advertising and Google DART cookies</a></li>
+          <li><a href="#third-party">Third-party vendors</a></li>
+          <li><a href="#your-rights">Your rights and choices</a></li>
+          <li><a href="#children">Children's privacy</a></li>
+          <li><a href="#changes">Changes to this policy</a></li>
+          <li><a href="#contact-us">Contact us</a></li>
+        </ol>
+      </div>
+
+      <h2 id="info-we-collect">1. Information we collect</h2>
+      <p>We collect information you provide directly to us, such as when you fill out our contact form, leave a comment, or subscribe to our newsletter. This may include your name, email address, and the content of your message. We do not require account creation to read the Site.</p>
+
+      <h2 id="log-files">2. Log files</h2>
+      <p>Like most websites, Verdant Notes uses log files. This data may include internet protocol (IP) addresses, browser type, internet service provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks. These are not linked to any personally identifiable information and are used to analyze trends, administer the Site, track visitor movement, and gather demographic information in aggregate.</p>
+
+      <h2 id="cookies">3. Cookies and similar technologies</h2>
+      <p>A cookie is a small file stored on your device that helps us, and our partners, recognize you on return visits and understand how the Site is used. We use cookies for essential site functionality (such as remembering your cookie preference), analytics, and advertising. You can control or delete cookies through your browser settings at any time; disabling cookies may affect some features of the Site.</p>
+
+      <h2 id="advertising">4. Advertising and Google DART cookies</h2>
+      <p>We use third-party advertising companies, including Google, to serve ads when you visit the Site. Google, as a third-party vendor, uses cookies — including the DoubleClick DART cookie — to serve ads based on your visits to this Site and other sites on the internet.</p>
+      <p>Google's use of advertising cookies enables it and its partners to serve ads based on your visit to this Site and/or other sites. You may opt out of personalized advertising by visiting Google's Ads Settings. You can also opt out of a third-party vendor's use of cookies for personalized advertising by visiting <a href="https://www.aboutads.info/choices/" rel="noopener noreferrer" target="_blank">www.aboutads.info</a>.</p>
+      <p>We participate in the Google AdSense program. Google's use of advertising cookies is governed by Google's own privacy policy, available at <a href="https://policies.google.com/technologies/ads" rel="noopener noreferrer" target="_blank">policies.google.com/technologies/ads</a>.</p>
+
+      <h2 id="third-party">5. Third-party vendors</h2>
+      <p>Some of our advertising partners may use cookies and web beacons on our Site. Each of these advertising partners has its own privacy policy for its policies on user data. For your convenience, we list our third-party ad servers and partners below; this list may be updated as our advertising relationships change.</p>
+      <ul>
+        <li>Google AdSense / Google Ad Manager</li>
+        <li>Google Analytics</li>
+        <li>Other third-party ad networks and affiliate partners as disclosed on our <a href="/disclaimer">Disclaimer page</a></li>
+      </ul>
+      <p>Third-party ad servers or ad networks use technologies like cookies, JavaScript, or web beacons in their respective advertisements and links that appear on Verdant Notes, which are sent directly to your browser. They automatically receive your IP address when this occurs. These technologies are used to measure the effectiveness of their advertising campaigns and/or to personalize the advertising content that you see. Verdant Notes has no access to or control over the cookies used by third-party advertisers.</p>
+
+      <h2 id="your-rights">6. Your rights and choices</h2>
+      <p>Depending on your location, you may have rights under laws such as the EU General Data Protection Regulation (GDPR) or the California Consumer Privacy Act (CCPA), including the right to access, correct, or delete personal data we hold about you, and the right to object to or restrict certain processing. See our dedicated <a href="/gdpr">GDPR page</a> for a full breakdown of your rights and how to exercise them.</p>
+      <p>To exercise any of these rights, contact us using the details on our <a href="/contact">Contact page</a>. We will respond within the timeframe required by applicable law.</p>
+      <p>You can also manage your cookie consent preferences at any time using the cookie banner shown on your first visit to the Site, or by clearing your browser's local storage for this Site.</p>
+
+      <h2 id="children">7. Children's privacy</h2>
+      <p>The Site is not directed at children under 13, and we do not knowingly collect personal information from children under 13. If you believe a child has provided us with personal information, please contact us so we can delete it.</p>
+
+      <h2 id="changes">8. Changes to this policy</h2>
+      <p>We may update this Privacy Policy from time to time. Changes take effect immediately upon posting, and the "Last updated" date at the top of this page will reflect the most recent revision. We encourage you to review this page periodically.</p>
+
+      <h2 id="contact-us">9. Contact us</h2>
+      <p>If you have questions about this Privacy Policy, please reach us via our <a href="/contact">Contact page</a> or by email at <a href="mailto:privacy@example.com">privacy@example.com</a>.</p>
+    </div>
+  </div>
+</BaseLayout>

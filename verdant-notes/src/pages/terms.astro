@@ -1,0 +1,49 @@
+---
+// src/pages/terms.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+---
+<BaseLayout
+  title="Terms & Conditions"
+  description="The terms and conditions governing your use of Verdant Notes, including content usage rights, user conduct, and liability."
+  currentPath="/terms"
+  noindex={true}
+>
+  <div class="container">
+    <Breadcrumb items={[{ label: 'Terms & Conditions' }]} />
+
+    <div class="legal-page">
+      <h1>Terms &amp; Conditions</h1>
+      <p class="legal-updated">Last updated: September 4, 2026</p>
+
+      <p>Please read these Terms and Conditions ("Terms") carefully before using verdantnotes.example (the "Site"), operated by Verdant Notes Media ("Verdant Notes," "we," "us," or "our"). By accessing or using the Site, you agree to be bound by these Terms. If you disagree with any part, please do not use the Site.</p>
+
+      <h2>1. Use of the Site</h2>
+      <p>You may use the Site for lawful, personal, non-commercial purposes only. You agree not to use the Site in any way that could damage, disable, overburden, or impair it, or interfere with any other party's use of the Site.</p>
+
+      <h2>2. Intellectual property</h2>
+      <p>Unless otherwise noted, all content on the Site — including text, graphics, logos, and images — is the property of Verdant Notes or its content suppliers and is protected by copyright and other intellectual property laws. You may share links to our content and quote brief excerpts with proper attribution, but you may not republish full articles without our prior written permission. See our <a href="/dmca">DMCA Policy</a> for copyright infringement claims.</p>
+
+      <h2>3. User-generated content</h2>
+      <p>If you submit comments, feedback, or other content through the Site, you grant Verdant Notes a non-exclusive, royalty-free, worldwide license to use, reproduce, and display that content in connection with operating the Site. You are solely responsible for the content you submit and agree not to post anything unlawful, defamatory, or infringing on others' rights. We reserve the right to remove any user content at our discretion.</p>
+
+      <h2>4. Third-party links and advertising</h2>
+      <p>The Site may contain links to third-party websites and displays advertising served by third-party networks, including Google AdSense. We do not control and are not responsible for the content, privacy practices, or accuracy of third-party sites. Your interactions with advertisers are solely between you and the advertiser.</p>
+
+      <h2>5. No professional advice</h2>
+      <p>Content on the Site is provided for general informational purposes only and does not constitute professional, legal, financial, or medical advice. See our <a href="/disclaimer">Disclaimer</a> for further detail.</p>
+
+      <h2>6. Limitation of liability</h2>
+      <p>The Site and its content are provided "as is" without warranties of any kind, express or implied. To the fullest extent permitted by law, Verdant Notes shall not be liable for any indirect, incidental, or consequential damages arising from your use of the Site.</p>
+
+      <h2>7. Changes to these Terms</h2>
+      <p>We may revise these Terms at any time. Continued use of the Site after changes are posted constitutes acceptance of the revised Terms. The "Last updated" date above reflects the most recent revision.</p>
+
+      <h2>8. Governing law</h2>
+      <p>These Terms are governed by the laws of the State of Oregon, United States, without regard to its conflict of law provisions.</p>
+
+      <h2>9. Contact us</h2>
+      <p>Questions about these Terms can be sent via our <a href="/contact">Contact page</a> or to <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+    </div>
+  </div>
+</BaseLayout>

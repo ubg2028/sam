@@ -1,0 +1,46 @@
+---
+// src/pages/team.astro
+// Editorial team page — every editor/writer with a short card linking to
+// their full profile at /team/[slug]. This page (plus the individual
+// profiles) is what establishes E-E-A-T for AdSense/Google reviewers.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { authors } from '../data/authors';
+---
+<BaseLayout
+  title="Editorial Team"
+  description="Meet the editors and writers behind Verdant Notes — their backgrounds, expertise, and how to reach them."
+  currentPath="/team"
+>
+  <div class="container">
+    <Breadcrumb items={[{ label: 'Editorial Team' }]} />
+  </div>
+
+  <section class="about-hero">
+    <div class="container">
+      <h1>Our editorial team</h1>
+      <p style="font-size:1.1rem;color:var(--color-text-secondary);">
+        Every article on Verdant Notes is written or reviewed by a named person with real experience in the subject.
+        Here's who they are.
+      </p>
+    </div>
+  </section>
+
+  <div class="container" style="padding: var(--space-5) 0;">
+    <div class="team-grid">
+      {authors.map((author) => (
+        <div class="team-card">
+          <a href={`/team/${author.slug}`} class="team-card-link">
+            <div class="team-avatar">{author.avatarInitials}</div>
+            <h3>{author.name}</h3>
+            <p class="role">{author.role}</p>
+            <p class="bio-short">{author.bio}</p>
+            <div class="expertise-tags">
+              {author.expertise.map((tag) => <span>{tag}</span>)}
+            </div>
+          </a>
+        </div>
+      ))}
+    </div>
+  </div>
+</BaseLayout>
