@@ -1,5 +1,4 @@
 ---
-// src/layouts/PostLayout.astro
 import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
@@ -24,7 +23,7 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month:
 // Fetch all published posts
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 
-// 1. Calculate Category Post Counts
+// 1. Calculate dynamic category counts
 const categoryMap = allPosts.reduce((acc, p) => {
   const cat = p.data.category;
   if (cat) {
@@ -38,7 +37,7 @@ const categoryList = Object.entries(categoryMap).map(([name, count]) => ({
   count,
 }));
 
-// 2. "You May Also Like" - Pick 3 random/other posts
+// 2. "You May Also Like" - Random 3 other posts
 const otherPosts = allPosts.filter((p) => p.slug !== post.slug);
 const randomPosts = [...otherPosts]
   .sort(() => 0.5 - Math.random())
@@ -122,7 +121,7 @@ const relatedPosts = allPosts
                   </div>
                 </div>
 
-                <!-- Fast Social Sharing Controls -->
+                <!-- Quick Share Buttons -->
                 <div class="quick-share">
                   <button class="share-btn copy-btn" id="copyLinkBtn" title="Copy article link" aria-label="Copy Link">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
@@ -138,7 +137,7 @@ const relatedPosts = allPosts
               </div>
             </header>
 
-            <!-- Featured Hero Image -->
+            <!-- Featured Image -->
             {image && (
               <figure class="featured-media-box">
                 <img src={image} alt={imageAlt ?? title} width="960" height="500" loading="eager" decoding="async" />
@@ -231,7 +230,7 @@ const relatedPosts = allPosts
                 <h3 class="widget-title">Key Insights</h3>
               </div>
               <nav id="toc-list" class="toc-nav" aria-label="Table of contents">
-                <!-- Headings will be injected dynamically by script -->
+                <!-- Headings dynamically injected by JS -->
               </nav>
             </div>
 
@@ -253,7 +252,7 @@ const relatedPosts = allPosts
               </ul>
             </div>
 
-            <!-- 3. YOU MAY ALSO LIKE (Random Suggestions) -->
+            <!-- 3. YOU MAY ALSO LIKE (Random Post Suggestions) -->
             {randomPosts.length > 0 && (
               <div class="sidebar-widget you-may-like-widget">
                 <div class="widget-header">
