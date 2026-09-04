@@ -1,4 +1,3 @@
-```markdown
 ---
 title: "The Brutal Truth About Commercial Real Estate: Why 80% of Retail Investors Lose Money (And What to Do Instead)"
 description: "Thinking about buying a commercial shop or office space? Here is an exhaustive breakdown of the hidden traps, broken assured returns, macro shifts killing retail footfalls, and where smart capital is actually moving."
