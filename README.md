@@ -57,15 +57,15 @@ look for.
 3. `authorSlug` must match a `slug` in `src/data/authors.ts` — that's what
    links the post to a real author profile, avatar, and bio automatically.
 4. Run `npm run build` (or `npm run dev` while writing). Astro picks up the
-   file automatically and renders it at `/blog/your-post-name` through
+   file automatically and renders it at `/sam/blog/your-post-name` through
    `src/pages/blog/[...slug].astro` — no other code changes needed.
 
 ## Editorial team / author profiles
 
 - `src/data/authors.ts` holds every writer: name, role, short bio, long bio,
   areas of expertise, and social/email links.
-- `/team` lists everyone with a card linking to their full profile.
-- `/team/[slug]` (e.g. `/team/asha-fenn`) is a full profile page listing every
+- `/sam/team` lists everyone with a card linking to their full profile.
+- `/sam/team/[slug]` (e.g. `/sam/team/asha-fenn`) is a full profile page listing every
   post that author has written — generated automatically from the data file.
 - Add a new team member by adding one object to `authors.ts`; a profile page
   and post listing appear on the next build.
@@ -105,7 +105,7 @@ npm run preview     # preview the production build locally
   the ~30-line mobile-nav toggle and the ~35-line cookie banner script,
   each scoped to the component that needs it.
 - No client-side framework (React/Vue/etc.) is used or required.
-- Images use explicit `width`/`height` to prevent layout shift (CLS), and
+- Images use explicit `width`/sam/`height` to prevent layout shift (CLS), and
   non-critical images use `loading="lazy"`.
 - CSS is a single small stylesheet with CSS variables — no utility-class
   bloat, no unused framework CSS shipped to the browser.

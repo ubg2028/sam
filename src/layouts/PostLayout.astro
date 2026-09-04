@@ -30,7 +30,7 @@ const relatedPosts = allPosts
 <BaseLayout
   title={title}
   description={description}
-  currentPath={`/blog/${post.slug}`}
+  currentPath={`/sam/blog/${post.slug}`}
   type="article"
   publishedTime={pubDate}
   author={author?.name}
@@ -48,7 +48,7 @@ const relatedPosts = allPosts
             <h1>{title}</h1>
             <div class="article-meta">
               <span class="category-badge">{category}</span>
-              {author && <span>By <a href={`/team/${author.slug}`}>{author.name}</a></span>}
+              {author && <span>By <a href={`/sam/team/${author.slug}`}>{author.name}</a></span>}
               <span>&middot;</span>
               <time datetime={pubDate.toISOString()}>{dateFormatter.format(pubDate)}</time>
               {updatedDate && (
@@ -79,7 +79,7 @@ const relatedPosts = allPosts
           {tags && tags.length > 0 && (
             <div class="article-tags">
               {tags.map((tag: string) => (
-                <a href={`/blog?tag=${encodeURIComponent(tag)}`}>#{tag}</a>
+                <a href={`/sam/blog?tag=${encodeURIComponent(tag)}`}>#{tag}</a>
               ))}
             </div>
           )}
@@ -104,11 +104,11 @@ const relatedPosts = allPosts
             <div class="post-grid">
               {relatedPosts.map((related) => (
                 <article class="post-card">
-                  <a href={`/blog/${related.slug}`} class="post-card-media" aria-hidden="true">
+                  <a href={`/sam/blog/${related.slug}`} class="post-card-media" aria-hidden="true">
                     {related.data.image ? <img src={related.data.image} alt="" loading="lazy" width="400" height="250" /> : null}
                   </a>
                   <span class="post-card-category">{related.data.category}</span>
-                  <h3><a href={`/blog/${related.slug}`}>{related.data.title}</a></h3>
+                  <h3><a href={`/sam/blog/${related.slug}`}>{related.data.title}</a></h3>
                   <p class="post-card-meta">{getAuthorBySlug(related.data.authorSlug)?.name} &middot; {dateFormatter.format(related.data.pubDate)}</p>
                 </article>
               ))}

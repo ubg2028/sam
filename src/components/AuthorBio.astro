@@ -15,9 +15,9 @@ const author = getAuthorBySlug(authorSlug);
   <div class="author-bio">
     <div class="author-avatar" aria-hidden="true">{author.avatarInitials}</div>
     <div>
-      <h3><a href={`/team/${author.slug}`}>{author.name}</a></h3>
+      <h3><a href={`/sam/team/${author.slug}`}>{author.name}</a></h3>
       <p>{author.bio}</p>
-      <p class="author-links"><a href={`/team/${author.slug}`}>More from {author.name.split(' ')[0]} &rarr;</a></p>
+      <p class="author-links"><a href={`/sam/team/${author.slug}`}>More from {author.name.split(' ')[0]} &rarr;</a></p>
     </div>
   </div>
 )}

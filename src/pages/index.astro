@@ -27,10 +27,10 @@ const heroAuthor = heroPost ? getAuthorBySlug(heroPost.data.authorSlug) : undefi
       <div class="container">
         <div>
           <p class="hero-eyebrow">Featured &middot; {heroPost.data.category}</p>
-          <h1 class="hero-title"><a href={`/sam/blog/${heroPost.slug}`}>{heroPost.data.title}</a></h1>
+          <h1 class="hero-title"><a href={`/sam/sam/blog/${heroPost.slug}`}>{heroPost.data.title}</a></h1>
           <p class="hero-excerpt">{heroPost.data.description}</p>
           <p class="hero-meta">
-            {heroAuthor && <>By <a href={`/sam/team/${heroAuthor.slug}`}>{heroAuthor.name}</a> &middot; </>}
+            {heroAuthor && <>By <a href={`/sam/sam/team/${heroAuthor.slug}`}>{heroAuthor.name}</a> &middot; </>}
             {dateFormatter.format(heroPost.data.pubDate)}
           </p>
         </div>
@@ -57,11 +57,11 @@ const heroAuthor = heroPost ? getAuthorBySlug(heroPost.data.authorSlug) : undefi
           <div class="post-grid">
             {gridPosts.map((post) => (
               <article class="post-card">
-                <a href={`/sam/blog/${post.slug}`} class="post-card-media" aria-hidden="true">
+                <a href={`/sam/sam/blog/${post.slug}`} class="post-card-media" aria-hidden="true">
                   {post.data.image ? <img src={post.data.image} alt="" loading="lazy" width="400" height="250" /> : null}
                 </a>
                 <span class="post-card-category">{post.data.category}</span>
-                <h3><a href={`/sam/blog/${post.slug}`}>{post.data.title}</a></h3>
+                <h3><a href={`/sam/sam/blog/${post.slug}`}>{post.data.title}</a></h3>
                 <p>{post.data.description}</p>
                 <p class="post-card-meta">{getAuthorBySlug(post.data.authorSlug)?.name} &middot; {dateFormatter.format(post.data.pubDate)}</p>
               </article>
@@ -89,7 +89,7 @@ const heroAuthor = heroPost ? getAuthorBySlug(heroPost.data.authorSlug) : undefi
                   {post.data.image ? <img src={post.data.image} alt="" loading="lazy" width="56" height="56" /> : null}
                 </span>
                 <div>
-                  <h4><a href={`/sam/blog/${post.slug}`}>{post.data.title}</a></h4>
+                  <h4><a href={`/sam/sam/blog/${post.slug}`}>{post.data.title}</a></h4>
                   <time datetime={post.data.pubDate.toISOString()}>{dateFormatter.format(post.data.pubDate)}</time>
                 </div>
               </li>
