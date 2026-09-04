@@ -5,7 +5,7 @@ pubDate: 2026-09-01
 authorSlug: "asha-fenn"
 category: "Technology"
 tags: ["product design", "ux", "trust"]
-image: "/images/posts/slower-software.jpg"
+image: "../sam/images/posts/slower-software.jpg"
 imageAlt: "An abstract illustration of a loading indicator"
 ---
 
