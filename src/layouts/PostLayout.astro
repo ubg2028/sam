@@ -19,7 +19,7 @@ const wordsPerMinute = 200;
 const wordCount = post.body.split(/\s+/g).length;
 const readingTime = Math.max(1, Math.round(wordCount / wordsPerMinute));
 
-const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 const relatedPosts = allPosts
@@ -27,6 +27,7 @@ const relatedPosts = allPosts
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 3);
 ---
+
 <BaseLayout
   title={title}
   description={description}
@@ -38,95 +39,903 @@ const relatedPosts = allPosts
 >
   <slot name="head" slot="head" />
 
-  <div class="container">
-    <Breadcrumb items={[{ label: 'Blog', href: '/blog' }, { label: title }]} />
+  <!-- Reading Progress Bar -->
+  <div id="reading-progress" class="reading-progress-bar"></div>
 
-    <div class="page-layout">
-      <div class="content-col">
-        <article>
-          <header class="article-header">
-            <h1>{title}</h1>
-            <div class="article-meta">
-              <span class="category-badge">{category}</span>
-              {author && <span>By <a href={`/sam/team/${author.slug}`}>{author.name}</a></span>}
-              <span>&middot;</span>
-              <time datetime={pubDate.toISOString()}>{dateFormatter.format(pubDate)}</time>
-              {updatedDate && (
-                <>
-                  <span>&middot;</span>
-                  <span>Updated {dateFormatter.format(updatedDate)}</span>
-                </>
-              )}
-              <span>&middot;</span>
-              <span>{readingTime} min read</span>
-            </div>
-          </header>
-
-          {image && (
-            <div class="article-featured-media">
-              <img src={image} alt={imageAlt ?? ''} width="1200" height="675" loading="eager" />
-            </div>
-          )}
-
-          <AdSlot position="top" />
-
-          <div class="article-body">
-            <slot />
-          </div>
-
-          <AdSlot position="in-article" />
-
-          {tags && tags.length > 0 && (
-            <div class="article-tags">
-              {tags.map((tag: string) => (
-                <a href={`/sam/blog?tag=${encodeURIComponent(tag)}`}>#{tag}</a>
-              ))}
-            </div>
-          )}
-
-          <div class="share-row">
-            <span>Share:</span>
-            <a href={`https://x.com/intent/tweet?url=${Astro.url}`} aria-label="Share on X" rel="noopener noreferrer" target="_blank">X</a>
-            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`} aria-label="Share on LinkedIn" rel="noopener noreferrer" target="_blank">in</a>
-            <a href={`mailto:?subject=${encodeURIComponent(title)}&body=${Astro.url}`} aria-label="Share via email">@</a>
-          </div>
-
-          {author && <AuthorBio authorSlug={author.slug} />}
-
-          <AdSlot position="in-article" />
-        </article>
-
-        {relatedPosts.length > 0 && (
-          <section class="related-posts" aria-label="Related posts">
-            <div class="section-heading">
-              <h2>Related Posts</h2>
-            </div>
-            <div class="post-grid">
-              {relatedPosts.map((related) => (
-                <article class="post-card">
-                  <a href={`/sam/blog/${related.slug}`} class="post-card-media" aria-hidden="true">
-                    {related.data.image ? <img src={related.data.image} alt="" loading="lazy" width="400" height="250" /> : null}
-                  </a>
-                  <span class="post-card-category">{related.data.category}</span>
-                  <h3><a href={`/sam/blog/${related.slug}`}>{related.data.title}</a></h3>
-                  <p class="post-card-meta">{getAuthorBySlug(related.data.authorSlug)?.name} &middot; {dateFormatter.format(related.data.pubDate)}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
+  <div class="blog-wrapper">
+    <div class="container">
+      <div class="breadcrumb-container">
+        <Breadcrumb items={[{ label: 'Blog', href: '/sam/blog' }, { label: title }]} />
       </div>
 
-      <aside class="sidebar" aria-label="Sidebar">
-        <div class="widget">
-          <h3>Categories</h3>
-          <ul class="category-list">
-            <li><a href="/sam/blog">Technology</a></li>
-            <li><a href="/sam/blog">Work &amp; Life</a></li>
-          </ul>
-        </div>
-        <AdSlot position="sidebar" />
-      </aside>
+      <div class="page-layout">
+        <!-- Main Content Area -->
+        <main class="content-col">
+          <article class="article-wrapper">
+            <!-- Article Header -->
+            <header class="article-header">
+              <div class="header-badges">
+                <span class="category-badge">{category}</span>
+                <span class="read-time-pill">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  {readingTime} min read
+                </span>
+              </div>
+
+              <h1 class="article-title">{title}</h1>
+
+              <div class="article-meta-card">
+                <div class="author-meta-info">
+                  <div class="author-avatar-placeholder">
+                    {author?.name ? author.name.charAt(0) : 'A'}
+                  </div>
+                  <div class="meta-details">
+                    {author ? (
+                      <span class="author-name">
+                        <a href={`/sam/team/${author.slug}`}>{author.name}</a>
+                      </span>
+                    ) : (
+                      <span class="author-name">Editorial Team</span>
+                    )}
+                    <div class="date-info">
+                      <time datetime={pubDate.toISOString()}>{dateFormatter.format(pubDate)}</time>
+                      {updatedDate && (
+                        <>
+                          <span class="dot">&bull;</span>
+                          <span class="updated-text">Updated {dateFormatter.format(updatedDate)}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Fast Social Sharing in Header -->
+                <div class="quick-share">
+                  <button class="share-btn copy-btn" id="copyLinkBtn" title="Copy article link" aria-label="Copy Link">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    <span class="tooltip" id="copyTooltip">Copied!</span>
+                  </button>
+                  <a href={`https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${Astro.url}`} class="share-btn x-btn" aria-label="Share on X" target="_blank" rel="noopener noreferrer">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  </a>
+                  <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`} class="share-btn in-btn" aria-label="Share on LinkedIn" target="_blank" rel="noopener noreferrer">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.64 1.64 0 1 0 0-3.28 1.64 1.64 0 0 0 0 3.28m1.4 9.74V10.13H5.06v8.37h2.8z"/></svg>
+                  </a>
+                </div>
+              </div>
+            </header>
+
+            {image && (
+              <figure class="featured-media-container">
+                <img src={image} alt={imageAlt ?? title} width="1200" height="675" loading="eager" />
+                {imageAlt && <figcaption>{imageAlt}</figcaption>}
+              </figure>
+            )}
+
+            <div class="ad-container">
+              <AdSlot position="top" />
+            </div>
+
+            <!-- Enhanced Typography Content Section -->
+            <div class="article-body">
+              <slot />
+            </div>
+
+            <div class="ad-container">
+              <AdSlot position="in-article" />
+            </div>
+
+            <!-- Tags Section -->
+            {tags && tags.length > 0 && (
+              <div class="tags-container">
+                <span class="tags-label">Tags:</span>
+                <div class="tags-list">
+                  {tags.map((tag: string) => (
+                    <a href={`/sam/blog?tag=${encodeURIComponent(tag)}`} class="tag-pill">
+                      #{tag}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <!-- Bottom Share CTA Box -->
+            <div class="share-box">
+              <div class="share-box-content">
+                <h4>Enjoyed this article?</h4>
+                <p>Share it with your network and help others discover it.</p>
+              </div>
+              <div class="share-box-actions">
+                <a href={`https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${Astro.url}`} class="share-pill twitter" target="_blank" rel="noopener noreferrer">
+                  Share on X
+                </a>
+                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`} class="share-pill linkedin" target="_blank" rel="noopener noreferrer">
+                  LinkedIn
+                </a>
+              </div>
+            </div>
+
+            {author && (
+              <div class="author-section">
+                <AuthorBio authorSlug={author.slug} />
+              </div>
+            )}
+
+            <div class="ad-container">
+              <AdSlot position="in-article" />
+            </div>
+          </article>
+
+          <!-- Related Posts Section -->
+          {relatedPosts.length > 0 && (
+            <section class="related-posts" aria-label="Related posts">
+              <div class="section-header">
+                <h2>Recommended Reads</h2>
+                <a href={`/sam/blog?category=${encodeURIComponent(category)}`} class="view-all-link">View all &rarr;</a>
+              </div>
+              <div class="post-grid">
+                {relatedPosts.map((related) => (
+                  <article class="modern-card">
+                    {related.data.image && (
+                      <a href={`/sam/blog/${related.slug}`} class="card-thumb" tabindex="-1">
+                        <img src={related.data.image} alt="" loading="lazy" width="400" height="240" />
+                      </a>
+                    )}
+                    <div class="card-body">
+                      <span class="card-category">{related.data.category}</span>
+                      <h3 class="card-title">
+                        <a href={`/sam/blog/${related.slug}`}>{related.data.title}</a>
+                      </h3>
+                      <div class="card-meta">
+                        <span>{dateFormatter.format(related.data.pubDate)}</span>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+        </main>
+
+        <!-- Sticky Sidebar -->
+        <aside class="sidebar-col" aria-label="Sidebar">
+          <div class="sticky-sidebar">
+            <div class="sidebar-widget newsletter-widget">
+              <span class="widget-icon">⚡</span>
+              <h3>Stay ahead of the curve</h3>
+              <p>Get the latest breakdowns, strategies, and industry insights straight to your inbox.</p>
+              <form class="mini-form" onsubmit="event.preventDefault(); alert('Subscribed!');">
+                <input type="email" placeholder="Enter your email" required />
+                <button type="submit">Subscribe</button>
+              </form>
+            </div>
+
+            <div class="sidebar-widget">
+              <h3 class="widget-title">Explore Topics</h3>
+              <ul class="clean-category-list">
+                <li><a href="/sam/blog?category=Technology"><span>Technology</span> <span class="count">&rarr;</span></a></li>
+                <li><a href="/sam/blog?category=Work+%26+Life"><span>Work &amp; Life</span> <span class="count">&rarr;</span></a></li>
+                <li><a href="/sam/blog?category=Design"><span>Product &amp; Design</span> <span class="count">&rarr;</span></a></li>
+              </ul>
+            </div>
+
+            <div class="ad-slot-sidebar">
+              <AdSlot position="sidebar" />
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   </div>
 </BaseLayout>
+
+<script>
+  // Reading Progress Bar Indicator
+  window.addEventListener('scroll', () => {
+    const progressBar = document.getElementById('reading-progress');
+    const article = document.querySelector('.article-body');
+    if (progressBar && article) {
+      const totalHeight = article.clientHeight;
+      const windowHeight = window.innerHeight;
+      const articleOffsetTop = article.getBoundingClientRect().top + window.scrollY;
+      const currentScroll = window.scrollY - articleOffsetTop;
+
+      if (currentScroll > 0) {
+        const progress = Math.min(100, Math.max(0, (currentScroll / (totalHeight - windowHeight + 300)) * 100));
+        progressBar.style.width = `${progress}%`;
+      } else {
+        progressBar.style.width = '0%';
+      }
+    }
+  });
+
+  // Quick Copy URL
+  const copyBtn = document.getElementById('copyLinkBtn');
+  const tooltip = document.getElementById('copyTooltip');
+  if (copyBtn && tooltip) {
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        tooltip.classList.add('visible');
+        setTimeout(() => tooltip.classList.remove('visible'), 2000);
+      } catch (err) {
+        console.error('Failed to copy', err);
+      }
+    });
+  }
+</script>
+
+<style>
+  /* ==========================================================
+     GLOBAL VARIABLES & LAYOUT RESETS
+  ========================================================== */
+  :root {
+    --accent-color: #3b82f6;
+    --accent-hover: #1d4ed8;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f8fafc;
+    --border-color: #e2e8f0;
+    --font-heading: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .reading-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3.5px;
+    background: linear-gradient(90deg, #3b82f6, #6366f1, #ec4899);
+    width: 0%;
+    z-index: 9999;
+    transition: width 0.1s ease-out;
+  }
+
+  .blog-wrapper {
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    padding: 1.5rem 0 4rem;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+  }
+
+  .breadcrumb-container {
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .page-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 3.5rem;
+    align-items: start;
+  }
+
+  /* ==========================================================
+     ARTICLE HEADER & METADATA
+  ========================================================== */
+  .article-header {
+    margin-bottom: 2.25rem;
+  }
+
+  .header-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .category-badge {
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+  }
+
+  .read-time-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .article-title {
+    font-size: clamp(2rem, 4vw, 2.85rem);
+    font-weight: 800;
+    line-height: 1.18;
+    letter-spacing: -0.025em;
+    color: #0f172a;
+    margin-bottom: 1.5rem;
+  }
+
+  .article-meta-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .author-meta-info {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .author-avatar-placeholder {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: #fff;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+  }
+
+  .meta-details {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .author-name a {
+    font-weight: 700;
+    color: #0f172a;
+    text-decoration: none;
+    font-size: 0.98rem;
+  }
+
+  .author-name a:hover {
+    color: var(--accent-color);
+  }
+
+  .date-info {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .date-info .dot {
+    margin: 0 0.35rem;
+  }
+
+  .quick-share {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .share-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    position: relative;
+  }
+
+  .share-btn:hover {
+    background: #0f172a;
+    color: #ffffff;
+    border-color: #0f172a;
+    transform: translateY(-2px);
+  }
+
+  .tooltip {
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0f172a;
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+
+  .tooltip.visible {
+    opacity: 1;
+  }
+
+  /* ==========================================================
+     FEATURED IMAGE
+  ========================================================== */
+  .featured-media-container {
+    margin: 1.75rem 0 2.5rem;
+  }
+
+  .featured-media-container img {
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.08);
+    display: block;
+  }
+
+  .featured-media-container figcaption {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 0.65rem;
+    font-style: italic;
+  }
+
+  /* ==========================================================
+     BEAUTIFUL ARTICLE TYPOGRAPHY (NEIL PATEL / MEDIUM STYLE)
+  ========================================================== */
+  :global(.article-body) {
+    font-size: 1.125rem;
+    line-height: 1.85;
+    color: #334155;
+    word-break: break-word;
+  }
+
+  :global(.article-body p) {
+    margin-bottom: 1.45rem;
+  }
+
+  :global(.article-body h2) {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.3;
+    margin: 2.8rem 0 1.25rem;
+    letter-spacing: -0.02em;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f1f5f9;
+  }
+
+  :global(.article-body h3) {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.35;
+    margin: 2rem 0 0.85rem;
+    letter-spacing: -0.01em;
+  }
+
+  :global(.article-body ul),
+  :global(.article-body ol) {
+    margin: 1.25rem 0 1.75rem 1.25rem;
+    padding-left: 1rem;
+  }
+
+  :global(.article-body li) {
+    margin-bottom: 0.65rem;
+    padding-left: 0.25rem;
+  }
+
+  :global(.article-body li::marker) {
+    color: var(--accent-color);
+    font-weight: bold;
+  }
+
+  :global(.article-body blockquote) {
+    margin: 2rem 0;
+    padding: 1.25rem 1.75rem;
+    background: #f8fafc;
+    border-left: 4px solid var(--accent-color);
+    border-radius: 0 12px 12px 0;
+    font-style: italic;
+    color: #1e293b;
+    font-size: 1.2rem;
+    line-height: 1.6;
+  }
+
+  :global(.article-body strong) {
+    color: #0f172a;
+    font-weight: 700;
+  }
+
+  :global(.article-body a) {
+    color: var(--accent-color);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-weight: 500;
+    transition: color 0.15s ease;
+  }
+
+  :global(.article-body a:hover) {
+    color: var(--accent-hover);
+  }
+
+  :global(.article-body img) {
+    border-radius: 12px;
+    margin: 2rem auto;
+    display: block;
+    max-width: 100%;
+    height: auto;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  :global(.article-body pre) {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+    overflow-x: auto;
+    margin: 1.75rem 0;
+    font-size: 0.95rem;
+  }
+
+  /* Placeholder Screenshot Tags */
+  :global(.article-body p:has(> strong:only-child)),
+  :global(.article-body p:contains('[Insérer')) {
+    background: #f1f5f9;
+    border: 1px dashed #cbd5e1;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #64748b;
+  }
+
+  /* ==========================================================
+     TAGS & SHARE BOX
+  ========================================================== */
+  .tags-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tags-label {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .tag-pill {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-color);
+    padding: 0.3rem 0.8rem;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    color: #475569;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+
+  .tag-pill:hover {
+    background: #eff6ff;
+    color: var(--accent-color);
+    border-color: #bfdbfe;
+  }
+
+  .share-box {
+    margin: 2.5rem 0;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    border: 1px solid #e0e7ff;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+  }
+
+  .share-box-content h4 {
+    margin: 0 0 0.25rem;
+    font-size: 1.15rem;
+    color: #0f172a;
+  }
+
+  .share-box-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .share-box-actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .share-pill {
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .share-pill.twitter {
+    background: #0f172a;
+    color: #fff;
+  }
+
+  .share-pill.linkedin {
+    background: #0a66c2;
+    color: #fff;
+  }
+
+  .share-pill:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  .author-section {
+    margin: 2.5rem 0;
+    padding: 2rem;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+  }
+
+  /* ==========================================================
+     RELATED POSTS CARDS
+  ========================================================== */
+  .related-posts {
+    margin-top: 4rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.75rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.55rem;
+    font-weight: 800;
+    margin: 0;
+  }
+
+  .view-all-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .post-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .modern-card {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modern-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.08);
+    border-color: #cbd5e1;
+  }
+
+  .card-thumb {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #e2e8f0;
+  }
+
+  .card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .modern-card:hover .card-thumb img {
+    transform: scale(1.05);
+  }
+
+  .card-body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  .card-category {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 0 0 0.85rem;
+  }
+
+  .card-title a {
+    color: #0f172a;
+    text-decoration: none;
+  }
+
+  .card-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: auto;
+  }
+
+  /* ==========================================================
+     STICKY SIDEBAR
+  ========================================================== */
+  .sticky-sidebar {
+    position: sticky;
+    top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .sidebar-widget {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+  }
+
+  .newsletter-widget {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #cbd5e1;
+  }
+
+  .widget-icon {
+    font-size: 1.75rem;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+  }
+
+  .newsletter-widget h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: #0f172a;
+  }
+
+  .newsletter-widget p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+  }
+
+  .mini-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mini-form input {
+    padding: 0.75rem 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .mini-form input:focus {
+    border-color: var(--accent-color);
+  }
+
+  .mini-form button {
+    background: var(--accent-color);
+    color: #fff;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+
+  .mini-form button:hover {
+    background: var(--accent-hover);
+  }
+
+  .widget-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 0 0 1rem;
+    color: #0f172a;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+  }
+
+  .clean-category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .clean-category-list li a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.65rem 0;
+    color: #475569;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    border-bottom: 1px dashed #f1f5f9;
+    transition: all 0.15s ease;
+  }
+
+  .clean-category-list li a:hover {
+    color: var(--accent-color);
+    padding-left: 0.35rem;
+  }
+
+  .ad-container,
+  .ad-slot-sidebar {
+    margin: 1.5rem 0;
+  }
+
+  /* ==========================================================
+     RESPONSIVE BREAKPOINTS
+  ========================================================== */
+  @media (max-width: 1024px) {
+    .page-layout {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    .sticky-sidebar {
+      position: static;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .article-title {
+      font-size: 1.85rem;
+    }
+
+    .article-meta-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .share-box {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
