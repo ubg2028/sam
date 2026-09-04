@@ -1,3 +1,4 @@
+---
 // src/layouts/PostLayout.astro
 import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
@@ -120,7 +121,7 @@ const relatedPosts = allPosts
               </figure>
             )}
 
-            <!-- Post Content Slot with Modern Styling -->
+            <!-- Post Content Slot -->
             <div class="article-body">
               <slot />
             </div>
@@ -139,7 +140,7 @@ const relatedPosts = allPosts
               </div>
             )}
 
-            <!-- Engagement & Share Box (Emerald Glow) -->
+            <!-- Engagement & Share Box -->
             <div class="share-box">
               <div class="share-box-content">
                 <h4>Found this guide valuable?</h4>
@@ -302,26 +303,22 @@ const relatedPosts = allPosts
 </script>
 
 <style>
-  /* ==========================================================
-     GREENISH MODERN COLOR PALETTE & DESIGN SYSTEM
-  ========================================================== */
   :root {
-    --green-primary: #059669;        /* Deep Emerald */
-    --green-primary-hover: #047857;  /* Emerald 700 */
-    --green-accent: #10b981;         /* Vibrant Emerald */
-    --green-light: #f0fdf4;          /* Soft Mint Wash */
-    --green-light-border: #bbf7d0;   /* Mint Border */
-    --green-dark: #064e3b;           /* Emerald 900 */
-    --text-heading: #0f172a;         /* Deep Slate */
-    --text-body: #334155;            /* Slate 700 */
-    --text-muted: #64748b;           /* Slate 500 */
+    --green-primary: #059669;
+    --green-primary-hover: #047857;
+    --green-accent: #10b981;
+    --green-light: #f0fdf4;
+    --green-light-border: #bbf7d0;
+    --green-dark: #064e3b;
+    --text-heading: #0f172a;
+    --text-body: #334155;
+    --text-muted: #64748b;
     --bg-surface: #ffffff;
     --bg-subtle: #f8fafc;
     --border-color: #e2e8f0;
     --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
   }
 
-  /* Reading Progress Bar */
   .reading-progress-bar {
     position: fixed;
     top: 0;
@@ -350,7 +347,6 @@ const relatedPosts = allPosts
     font-size: 0.82rem;
   }
 
-  /* Grid Layout: Main Article + Sticky Sidebar */
   .page-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 300px;
@@ -358,9 +354,6 @@ const relatedPosts = allPosts
     align-items: start;
   }
 
-  /* ==========================================================
-     RELIABLE STICKY SIDEBAR
-  ========================================================== */
   .sidebar-col {
     position: relative;
     width: 100%;
@@ -396,7 +389,6 @@ const relatedPosts = allPosts
     gap: 0.4rem;
   }
 
-  /* Dynamic Table of Contents (TOC) */
   .toc-list {
     display: flex;
     flex-direction: column;
@@ -425,7 +417,6 @@ const relatedPosts = allPosts
     color: #64748b;
   }
 
-  /* Newsletter Widget */
   .newsletter-widget {
     background: linear-gradient(145deg, #f0fdf4 0%, #ecfdf5 100%);
     border: 1px solid var(--green-light-border);
@@ -495,7 +486,6 @@ const relatedPosts = allPosts
     background: var(--green-primary-hover);
   }
 
-  /* Clean Category Links */
   .clean-category-list {
     list-style: none;
     margin: 0;
@@ -524,9 +514,6 @@ const relatedPosts = allPosts
     padding-left: 0.7rem;
   }
 
-  /* ==========================================================
-     ARTICLE HEADER & TITLE (Optimized Typography)
-  ========================================================== */
   .article-header {
     margin-bottom: 1.25rem;
   }
@@ -565,7 +552,6 @@ const relatedPosts = allPosts
     font-weight: 500;
   }
 
-  /* Responsive & Clean Title */
   .article-title {
     font-size: clamp(1.8rem, 3.2vw, 2.45rem);
     font-weight: 800;
@@ -638,7 +624,6 @@ const relatedPosts = allPosts
     margin: 0 0.2rem;
   }
 
-  /* Quick Social Buttons */
   .quick-share {
     display: flex;
     align-items: center;
@@ -688,9 +673,6 @@ const relatedPosts = allPosts
     opacity: 1;
   }
 
-  /* ==========================================================
-     FEATURED IMAGE
-  ========================================================== */
   .featured-media-box {
     margin: 0 0 1.5rem 0;
   }
@@ -712,9 +694,6 @@ const relatedPosts = allPosts
     font-style: italic;
   }
 
-  /* ==========================================================
-     ENGAGING POST TYPOGRAPHY & BODY STYLING
-  ========================================================== */
   :global(.article-body) {
     font-size: 1.05rem;
     line-height: 1.75;
@@ -762,7 +741,6 @@ const relatedPosts = allPosts
     font-weight: 700;
   }
 
-  /* Custom Callout Box Styling */
   :global(.article-body .callout) {
     margin: 1.35rem 0;
     padding: 1rem 1.15rem;
@@ -791,7 +769,6 @@ const relatedPosts = allPosts
     color: #92400e;
   }
 
-  /* Key Takeaways Box */
   :global(.article-body .takeaways-box) {
     background: linear-gradient(145deg, #f0fdf4, #ffffff);
     border: 1px solid var(--green-light-border);
@@ -860,7 +837,6 @@ const relatedPosts = allPosts
     border: 1px solid #1e293b;
   }
 
-  /* Polished Responsive Tables */
   :global(.article-body table) {
     width: 100%;
     border-collapse: collapse;
@@ -888,9 +864,6 @@ const relatedPosts = allPosts
     background: #fbfcfe;
   }
 
-  /* ==========================================================
-     TAGS & SHARE CTA
-  ========================================================== */
   .tags-container {
     display: flex;
     align-items: center;
@@ -923,7 +896,6 @@ const relatedPosts = allPosts
     border-color: var(--green-light-border);
   }
 
-  /* Share Card */
   .share-box {
     margin: 1.75rem 0 1.25rem;
     padding: 1.15rem 1.35rem;
@@ -987,9 +959,6 @@ const relatedPosts = allPosts
     margin-top: 1.5rem;
   }
 
-  /* ==========================================================
-     RELATED POSTS GRID
-  ========================================================== */
   .related-posts {
     margin-top: 2rem;
     padding-top: 1.25rem;
@@ -1083,9 +1052,6 @@ const relatedPosts = allPosts
     margin-top: auto;
   }
 
-  /* ==========================================================
-     RESPONSIVE BREAKPOINTS
-  ========================================================== */
   @media (max-width: 960px) {
     .page-layout {
       grid-template-columns: 1fr;
