@@ -96,7 +96,7 @@ const relatedPosts = allPosts
 
               {description && <p class="article-subtitle">{description}</p>}
 
-              <!-- Quick Meta & Share Strip (Author Linked Directly to Profile) -->
+              <!-- Author Strip + Quick Share -->
               <div class="article-meta-strip">
                 <div class="author-inline">
                   {author ? (
@@ -172,8 +172,8 @@ const relatedPosts = allPosts
             <!-- Bottom Engagement Share Card -->
             <div class="share-box">
               <div class="share-box-content">
-                <h4>Found this valuable?</h4>
-                <p>Share this post with your network and help others build better.</p>
+                <h4>Found this guide valuable?</h4>
+                <p>Share it with your team and network to help them scale faster.</p>
               </div>
               <div class="share-box-actions">
                 <a href={`https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${Astro.url}`} class="btn-green-share" target="_blank" rel="noopener noreferrer">
@@ -228,15 +228,13 @@ const relatedPosts = allPosts
         <aside class="sidebar-col" aria-label="Sidebar">
           <div class="sticky-sidebar">
             
-            <!-- 1. KEY INSIGHTS (TOC without internal scrollbar) -->
+            <!-- 1. KEY INSIGHTS (TOC) -->
             <div class="sidebar-widget key-insights-widget" id="toc-widget">
               <div class="widget-header">
                 <span class="widget-icon">🎯</span>
                 <h3 class="widget-title">Key Insights</h3>
               </div>
-              <nav id="toc-list" class="toc-nav" aria-label="Table of contents">
-                <!-- Headings injected dynamically -->
-              </nav>
+              <nav id="toc-list" class="toc-nav" aria-label="Table of contents"></nav>
             </div>
 
             <!-- 2. CATEGORIES WITH COUNTS -->
@@ -257,7 +255,7 @@ const relatedPosts = allPosts
               </ul>
             </div>
 
-            <!-- 3. YOU MAY ALSO LIKE (Random Post Suggestions) -->
+            <!-- 3. YOU MAY ALSO LIKE -->
             {randomPosts.length > 0 && (
               <div class="sidebar-widget you-may-like-widget">
                 <div class="widget-header">
@@ -290,7 +288,7 @@ const relatedPosts = allPosts
 </BaseLayout>
 
 <script>
-  // 1. Top Reading Progress Bar
+  // Top Reading Progress Bar
   window.addEventListener('scroll', () => {
     const progressBar = document.getElementById('reading-progress');
     const article = document.querySelector('.article-body');
@@ -309,7 +307,7 @@ const relatedPosts = allPosts
     }
   });
 
-  // 2. Quick Copy URL Link
+  // Quick Copy URL Link
   const copyBtn = document.getElementById('copyLinkBtn');
   const tooltip = document.getElementById('copyTooltip');
   if (copyBtn && tooltip) {
@@ -324,7 +322,7 @@ const relatedPosts = allPosts
     });
   }
 
-  // 3. Key Insights TOC Builder with Smooth Scroll & Active ScrollSpy
+  // Key Insights TOC Builder with Smooth Scroll & Active ScrollSpy
   document.addEventListener('DOMContentLoaded', () => {
     const article = document.querySelector('.article-body');
     const tocWidget = document.getElementById('toc-widget');
@@ -351,7 +349,6 @@ const relatedPosts = allPosts
       link.textContent = heading.textContent;
       link.className = heading.tagName.toLowerCase() === 'h3' ? 'toc-link toc-subheading' : 'toc-link toc-heading';
 
-      // Smooth scroll on click
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const target = document.getElementById(id);
@@ -371,7 +368,6 @@ const relatedPosts = allPosts
       tocList.appendChild(link);
     });
 
-    // ScrollSpy active highlight
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -389,7 +385,7 @@ const relatedPosts = allPosts
 
 <style>
   /* ==========================================================
-     GREENISH THEME VARIABLES (Emerald / Mint Focus)
+     GREENISH THEME VARIABLES
   ========================================================== */
   :root {
     --green-600: #059669;
@@ -407,7 +403,6 @@ const relatedPosts = allPosts
     --bg-page: #fafbfc;
   }
 
-  /* Reading Progress Bar */
   .reading-progress-bar {
     position: fixed;
     top: 0;
@@ -419,7 +414,6 @@ const relatedPosts = allPosts
     transition: width 0.08s ease-out;
   }
 
-  /* Layout Container */
   .blog-wrapper {
     background-color: var(--bg-page);
     color: var(--text-body);
@@ -437,7 +431,6 @@ const relatedPosts = allPosts
     font-size: 0.82rem;
   }
 
-  /* Grid Layout */
   .page-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 310px;
@@ -453,9 +446,6 @@ const relatedPosts = allPosts
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
   }
 
-  /* ==========================================================
-     ARTICLE HEADER & AUTHOR PROFILE LINK
-  ========================================================== */
   .article-header {
     margin-bottom: 1.25rem;
   }
@@ -512,7 +502,6 @@ const relatedPosts = allPosts
     margin: 0 0 1rem 0;
   }
 
-  /* Author Link & Quick Share Strip */
   .article-meta-strip {
     display: flex;
     justify-content: space-between;
@@ -534,7 +523,6 @@ const relatedPosts = allPosts
     align-items: center;
     gap: 0.6rem;
     text-decoration: none;
-    transition: opacity 0.15s ease;
   }
 
   .author-profile-link:hover .author-name-text {
@@ -638,7 +626,6 @@ const relatedPosts = allPosts
     opacity: 1;
   }
 
-  /* Featured Image */
   .featured-media-container {
     margin: 0 0 1.5rem 0;
   }
@@ -660,7 +647,7 @@ const relatedPosts = allPosts
   }
 
   /* ==========================================================
-     ENGAGING MARKDOWN BODY STYLING
+     NEIL PATEL STYLE ENGAGING TYPOGRAPHY & COMPONENTS
   ========================================================== */
   :global(.article-body) {
     font-size: 1.05rem;
@@ -677,7 +664,7 @@ const relatedPosts = allPosts
     font-weight: 800;
     color: var(--text-main);
     line-height: 1.3;
-    margin: 1.75rem 0 0.75rem;
+    margin: 1.85rem 0 0.75rem;
     padding-bottom: 0.35rem;
     border-bottom: 2px solid var(--green-50);
     letter-spacing: -0.015em;
@@ -708,6 +695,107 @@ const relatedPosts = allPosts
     font-weight: 700;
   }
 
+  /* 1. TL;DR Quick Summary Box */
+  :global(.article-body .tldr-box) {
+    background: linear-gradient(145deg, #f0fdf4 0%, #ffffff 100%);
+    border: 1.5px solid var(--green-200);
+    border-left: 4px solid var(--green-600);
+    border-radius: 8px;
+    padding: 1.15rem 1.35rem;
+    margin: 1.35rem 0;
+  }
+
+  :global(.article-body .tldr-title) {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--green-800);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  /* 2. Pros & Cons Grid */
+  :global(.article-body .pros-cons-grid) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.35rem 0;
+  }
+
+  @media (max-width: 650px) {
+    :global(.article-body .pros-cons-grid) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  :global(.article-body .pros-card) {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+  }
+
+  :global(.article-body .pros-card h4) {
+    color: #166534;
+    margin: 0 0 0.5rem 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  :global(.article-body .cons-card) {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+  }
+
+  :global(.article-body .cons-card h4) {
+    color: #9a3412;
+    margin: 0 0 0.5rem 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  /* 3. Stat Highlight Card */
+  :global(.article-body .stat-box) {
+    background: #ffffff;
+    border: 1.5px solid var(--green-200);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin: 1.35rem 0;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.04);
+  }
+
+  :global(.article-body .stat-number) {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--green-600);
+    line-height: 1.1;
+    margin-bottom: 0.25rem;
+  }
+
+  :global(.article-body .stat-label) {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  /* 4. Verdict / Best For Badge */
+  :global(.article-body .verdict-badge) {
+    display: inline-block;
+    background: var(--green-600);
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    margin: 0.5rem 0;
+  }
+
   :global(.article-body blockquote) {
     margin: 1.35rem 0;
     padding: 0.9rem 1.2rem;
@@ -721,18 +809,6 @@ const relatedPosts = allPosts
 
   :global(.article-body blockquote p) {
     margin: 0;
-  }
-
-  :global(.article-body .callout) {
-    background: var(--green-50);
-    border: 1px solid var(--green-200);
-    border-radius: 8px;
-    padding: 1rem 1.25rem;
-    margin: 1.25rem 0;
-  }
-
-  :global(.article-body .callout strong) {
-    color: var(--green-800);
   }
 
   :global(.article-body a) {
@@ -763,6 +839,26 @@ const relatedPosts = allPosts
     overflow-x: auto;
     margin: 1.25rem 0;
     font-size: 0.88rem;
+  }
+
+  :global(.article-body table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.35rem 0;
+    font-size: 0.9rem;
+  }
+
+  :global(.article-body th),
+  :global(.article-body td) {
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border-light);
+    text-align: left;
+  }
+
+  :global(.article-body th) {
+    background: var(--green-50);
+    color: var(--green-800);
+    font-weight: 700;
   }
 
   /* Tags */
@@ -874,11 +970,10 @@ const relatedPosts = allPosts
 
   .sticky-sidebar {
     position: sticky;
-    top: 1.25rem; /* Sticks firmly as one block */
+    top: 1.25rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    /* Removed all max-height, overflow-y and scrollbars */
   }
 
   .sidebar-widget {
@@ -909,7 +1004,7 @@ const relatedPosts = allPosts
     color: var(--text-main);
   }
 
-  /* 1. Key Insights (TOC) - Normal non-scrollable flow */
+  /* 1. Key Insights (TOC) */
   .key-insights-widget {
     border-top: 3px solid var(--green-600);
   }
@@ -992,7 +1087,7 @@ const relatedPosts = allPosts
     border-radius: 12px;
   }
 
-  /* 3. You May Also Like Mini Cards */
+  /* 3. You May Also Like */
   .mini-post-list {
     display: flex;
     flex-direction: column;
