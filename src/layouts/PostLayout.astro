@@ -3,6 +3,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
+import AuthorBio from '../components/AuthorBio.astro';
 import { getAuthorBySlug } from '../data/authors';
 
 export interface Props {
@@ -20,8 +21,30 @@ const readingTime = Math.max(1, Math.round(wordCount / wordsPerMinute));
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
-// Related Posts
+// Fetch all published posts
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+
+// 1. Calculate Category Post Counts
+const categoryMap = allPosts.reduce((acc, p) => {
+  const cat = p.data.category;
+  if (cat) {
+    acc[cat] = (acc[cat] || 0) + 1;
+  }
+  return acc;
+}, {} as Record<string, number>);
+
+const categoryList = Object.entries(categoryMap).map(([name, count]) => ({
+  name,
+  count,
+}));
+
+// 2. "You May Also Like" - Pick 3 random/other posts
+const otherPosts = allPosts.filter((p) => p.slug !== post.slug);
+const randomPosts = [...otherPosts]
+  .sort(() => 0.5 - Math.random())
+  .slice(0, 3);
+
+// 3. Related Posts for bottom section
 const relatedPosts = allPosts
   .filter((p) => p.slug !== post.slug && p.data.category === category)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
@@ -39,26 +62,32 @@ const relatedPosts = allPosts
 >
   <slot name="head" slot="head" />
 
-  <!-- Top Reading Progress Bar -->
-  <div id="reading-progress" class="reading-progress-bar"></div>
+  <!-- Smooth Green Reading Progress Bar -->
+  <div id="reading-progress" class="reading-progress-bar" aria-hidden="true"></div>
 
   <div class="blog-wrapper">
     <div class="container">
-      <!-- Breadcrumb Navigation -->
-      <nav class="breadcrumb-container" aria-label="Breadcrumb">
+      
+      <!-- Compact Breadcrumb -->
+      <nav class="breadcrumb-nav" aria-label="Breadcrumb">
         <Breadcrumb items={[{ label: 'Blog', href: '/sam/blog' }, { label: category, href: `/sam/blog?category=${encodeURIComponent(category)}` }, { label: title }]} />
       </nav>
 
+      <!-- Main Layout Grid -->
       <div class="page-layout">
+        
         <!-- Main Article Column -->
         <main class="content-col">
           <article class="article-wrapper">
+            
             <!-- Article Header -->
             <header class="article-header">
-              <div class="header-badges">
-                <span class="category-badge">{category}</span>
+              <div class="header-pills">
+                <a href={`/sam/blog?category=${encodeURIComponent(category)}`} class="category-badge">
+                  {category}
+                </a>
                 <span class="read-time-pill">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                   {readingTime} min read
                 </span>
                 <span class="date-pill">
@@ -66,51 +95,58 @@ const relatedPosts = allPosts
                 </span>
               </div>
 
+              <!-- Article Title -->
               <h1 class="article-title">{title}</h1>
 
               {description && <p class="article-subtitle">{description}</p>}
 
               <!-- Quick Meta & Share Strip -->
-              <div class="article-meta-strip">
-                <div class="author-inline">
-                  <div class="author-avatar-sm">
-                    {author?.avatar ? (
-                      <img src={author.avatar} alt={author.name} />
-                    ) : (
-                      <span>{author?.name ? author.name.charAt(0) : 'E'}</span>
-                    )}
+              <div class="article-meta-card">
+                <div class="author-meta-info">
+                  <div class="author-avatar-placeholder">
+                    {author?.name ? author.name.charAt(0) : 'E'}
                   </div>
-                  <div>
-                    <span class="byline">Written by</span>
-                    <span class="author-name-text">{author?.name ?? 'Editorial Team'}</span>
+                  <div class="meta-details">
+                    <span class="author-name">
+                      {author ? <a href={`/sam/team/${author.slug}`}>{author.name}</a> : 'Editorial Team'}
+                    </span>
+                    <div class="date-info">
+                      <span>{dateFormatter.format(pubDate)}</span>
+                      {updatedDate && (
+                        <>
+                          <span class="dot">&bull;</span>
+                          <span class="updated-text">Updated {dateFormatter.format(updatedDate)}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
+                <!-- Fast Social Sharing Controls -->
                 <div class="quick-share">
-                  <span class="share-text">Share:</span>
-                  <button class="share-btn copy-btn" id="copyLinkBtn" title="Copy link" aria-label="Copy Link">
+                  <button class="share-btn copy-btn" id="copyLinkBtn" title="Copy article link" aria-label="Copy Link">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                     <span class="tooltip" id="copyTooltip">Link Copied!</span>
                   </button>
-                  <a href={`https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${Astro.url}`} class="share-btn" target="_blank" rel="noopener noreferrer" aria-label="Share on X">
+                  <a href={`https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${Astro.url}`} class="share-btn" aria-label="Share on X" target="_blank" rel="noopener noreferrer">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                   </a>
-                  <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`} class="share-btn" target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn">
+                  <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`} class="share-btn" aria-label="Share on LinkedIn" target="_blank" rel="noopener noreferrer">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.64 1.64 0 1 0 0-3.28 1.64 1.64 0 0 0 0 3.28m1.4 9.74V10.13H5.06v8.37h2.8z"/></svg>
                   </a>
                 </div>
               </div>
             </header>
 
-            <!-- Featured Image -->
+            <!-- Featured Hero Image -->
             {image && (
-              <figure class="featured-media-container">
-                <img src={image} alt={imageAlt ?? title} width="960" height="480" loading="eager" />
+              <figure class="featured-media-box">
+                <img src={image} alt={imageAlt ?? title} width="960" height="500" loading="eager" decoding="async" />
                 {imageAlt && <figcaption>{imageAlt}</figcaption>}
               </figure>
             )}
 
-            <!-- Post Markdown Body -->
+            <!-- Post Body Slot -->
             <div class="article-body">
               <slot />
             </div>
@@ -129,24 +165,31 @@ const relatedPosts = allPosts
               </div>
             )}
 
-            <!-- Bottom Engagement Share Card -->
+            <!-- Engagement & Share Box -->
             <div class="share-box">
               <div class="share-box-content">
-                <h4>Found this valuable?</h4>
-                <p>Share this post with your network and help others build better.</p>
+                <h4>Found this guide valuable?</h4>
+                <p>Share it with your teammates and network to help them level up.</p>
               </div>
               <div class="share-box-actions">
-                <a href={`https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${Astro.url}`} class="btn-green-share" target="_blank" rel="noopener noreferrer">
+                <a href={`https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${Astro.url}`} class="share-pill share-green" target="_blank" rel="noopener noreferrer">
                   Share on X
                 </a>
-                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`} class="btn-outline-share" target="_blank" rel="noopener noreferrer">
-                  Share on LinkedIn
+                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`} class="share-pill share-outline" target="_blank" rel="noopener noreferrer">
+                  LinkedIn
                 </a>
               </div>
             </div>
+
+            <!-- Author Card at Bottom -->
+            {author && (
+              <div class="author-section">
+                <AuthorBio authorSlug={author.slug} />
+              </div>
+            )}
           </article>
 
-          <!-- Related Posts Section -->
+          <!-- Recommended Posts -->
           {relatedPosts.length > 0 && (
             <section class="related-posts" aria-label="Related posts">
               <div class="section-header">
@@ -160,7 +203,7 @@ const relatedPosts = allPosts
                   <article class="modern-card">
                     {related.data.image && (
                       <a href={`/sam/blog/${related.slug}`} class="card-thumb" tabindex="-1">
-                        <img src={related.data.image} alt={related.data.title} loading="lazy" width="300" height="160" />
+                        <img src={related.data.image} alt={related.data.title} loading="lazy" width="340" height="180" />
                       </a>
                     )}
                     <div class="card-body">
@@ -177,95 +220,85 @@ const relatedPosts = allPosts
           )}
         </main>
 
-        <!-- Sticky Sidebar with Author Bio -->
-        <aside class="sidebar-col" aria-label="Sidebar">
+        <!-- STICKY SIDEBAR -->
+        <aside class="sidebar-col" aria-label="Article Sidebar">
           <div class="sticky-sidebar">
             
-            <!-- AUTHOR BIO & PROFILE CARD -->
-            <div class="sidebar-widget author-card-widget">
-              <div class="widget-badge">Author Profile</div>
-              <div class="author-card-header">
-                <div class="author-avatar-lg">
-                  {author?.avatar ? (
-                    <img src={author.avatar} alt={author.name} />
-                  ) : (
-                    <span>{author?.name ? author.name.charAt(0) : 'S'}</span>
-                  )}
-                </div>
-                <div class="author-info">
-                  <h3 class="author-title-name">
-                    {author?.name ?? 'Samrat'}
-                  </h3>
-                  <span class="founder-badge">Founder & Lead Architect</span>
-                </div>
+            <!-- 1. KEY INSIGHTS (TOC with Smooth Scroll) -->
+            <div class="sidebar-widget key-insights-widget" id="toc-widget">
+              <div class="widget-header">
+                <span class="widget-icon">🎯</span>
+                <h3 class="widget-title">Key Insights</h3>
               </div>
-
-              <p class="author-bio-text">
-                {author?.bio ?? 'Building high-performance web experiences, sharing actionable engineering playbooks and growth insights.'}
-              </p>
-
-              <div class="author-social-links">
-                {author?.twitter && (
-                  <a href={author.twitter} target="_blank" rel="noopener noreferrer" class="social-icon" title="Twitter / X">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                  </a>
-                )}
-                {author?.linkedin && (
-                  <a href={author.linkedin} target="_blank" rel="noopener noreferrer" class="social-icon" title="LinkedIn">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.64 1.64 0 1 0 0-3.28 1.64 1.64 0 0 0 0 3.28m1.4 9.74V10.13H5.06v8.37h2.8z"/></svg>
-                  </a>
-                )}
-                {author?.github && (
-                  <a href={author.github} target="_blank" rel="noopener noreferrer" class="social-icon" title="GitHub">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-                  </a>
-                )}
-              </div>
+              <nav id="toc-list" class="toc-nav" aria-label="Table of contents">
+                <!-- Headings will be injected dynamically by script -->
+              </nav>
             </div>
 
-            <!-- Categories Card -->
+            <!-- 2. CATEGORIES WITH COUNTS -->
             <div class="sidebar-widget">
-              <h4 class="widget-title">Explore Topics</h4>
+              <div class="widget-header">
+                <span class="widget-icon">📂</span>
+                <h3 class="widget-title">Categories</h3>
+              </div>
               <ul class="clean-category-list">
-                <li><a href="/sam/blog?category=Technology"><span>Technology</span> <span class="arrow">&rarr;</span></a></li>
-                <li><a href="/sam/blog?category=Work+%26+Life"><span>Work &amp; Life</span> <span class="arrow">&rarr;</span></a></li>
-                <li><a href="/sam/blog?category=Design"><span>Design &amp; UI</span> <span class="arrow">&rarr;</span></a></li>
-                <li><a href="/sam/blog?category=Growth"><span>Growth &amp; SEO</span> <span class="arrow">&rarr;</span></a></li>
+                {categoryList.map((cat) => (
+                  <li>
+                    <a href={`/sam/blog?category=${encodeURIComponent(cat.name)}`}>
+                      <span class="cat-name">{cat.name}</span>
+                      <span class="cat-count">{cat.count}</span>
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            <!-- Newsletter Pill -->
-            <div class="sidebar-widget newsletter-widget">
-              <div class="widget-header">
-                <span class="pulse-dot"></span>
-                <h4 class="widget-title">Weekly Insights</h4>
+            <!-- 3. YOU MAY ALSO LIKE (Random Suggestions) -->
+            {randomPosts.length > 0 && (
+              <div class="sidebar-widget you-may-like-widget">
+                <div class="widget-header">
+                  <span class="widget-icon">✨</span>
+                  <h3 class="widget-title">You May Also Like</h3>
+                </div>
+                <div class="mini-post-list">
+                  {randomPosts.map((randPost) => (
+                    <a href={`/sam/blog/${randPost.slug}`} class="mini-post-card">
+                      {randPost.data.image && (
+                        <div class="mini-post-thumb">
+                          <img src={randPost.data.image} alt={randPost.data.title} loading="lazy" />
+                        </div>
+                      )}
+                      <div class="mini-post-content">
+                        <span class="mini-post-category">{randPost.data.category}</span>
+                        <h4 class="mini-post-title">{randPost.data.title}</h4>
+                      </div>
+                    </a>
+                  ))}
+                </div>
               </div>
-              <p>Actionable guides on web engineering & design delivered to your inbox.</p>
-              <form class="mini-form" onsubmit="event.preventDefault(); alert('Subscribed!');">
-                <input type="email" placeholder="Enter your email" required />
-                <button type="submit">Subscribe</button>
-              </form>
-            </div>
+            )}
 
           </div>
         </aside>
+
       </div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
-  // Top Reading Progress
+  // 1. Reading Progress Bar
   window.addEventListener('scroll', () => {
     const progressBar = document.getElementById('reading-progress');
     const article = document.querySelector('.article-body');
     if (progressBar && article) {
       const totalHeight = article.clientHeight;
+      const windowHeight = window.innerHeight;
       const articleOffsetTop = article.getBoundingClientRect().top + window.scrollY;
       const currentScroll = window.scrollY - articleOffsetTop;
 
       if (currentScroll > 0) {
-        const progress = Math.min(100, Math.max(0, (currentScroll / (totalHeight - window.innerHeight + 100)) * 100));
+        const progress = Math.min(100, Math.max(0, (currentScroll / (totalHeight - windowHeight + 100)) * 100));
         progressBar.style.width = `${progress}%`;
       } else {
         progressBar.style.width = '0%';
@@ -273,7 +306,7 @@ const relatedPosts = allPosts
     }
   });
 
-  // Copy Link Handler
+  // 2. Quick Copy URL Link
   const copyBtn = document.getElementById('copyLinkBtn');
   const tooltip = document.getElementById('copyTooltip');
   if (copyBtn && tooltip) {
@@ -283,103 +316,358 @@ const relatedPosts = allPosts
         tooltip.classList.add('visible');
         setTimeout(() => tooltip.classList.remove('visible'), 2000);
       } catch (err) {
-        console.error('Copy failed', err);
+        console.error('Failed to copy link', err);
       }
     });
   }
+
+  // 3. Key Insights TOC Builder & Smooth Scroll Spy
+  document.addEventListener('DOMContentLoaded', () => {
+    const article = document.querySelector('.article-body');
+    const tocWidget = document.getElementById('toc-widget');
+    const tocList = document.getElementById('toc-list');
+
+    if (!article || !tocWidget || !tocList) return;
+
+    const headings = article.querySelectorAll('h2, h3');
+
+    if (headings.length === 0) {
+      tocWidget.style.display = 'none';
+      return;
+    }
+
+    headings.forEach((heading, index) => {
+      let id = heading.id;
+      if (!id) {
+        id = heading.textContent?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `section-${index}`;
+        heading.id = id;
+      }
+
+      const link = document.createElement('a');
+      link.href = `#${id}`;
+      link.textContent = heading.textContent;
+      link.className = heading.tagName.toLowerCase() === 'h3' ? 'toc-link toc-subheading' : 'toc-link toc-heading';
+
+      // Smooth scroll on click
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(id);
+        if (target) {
+          const headerOffset = 80;
+          const elementPosition = target.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.scrollY - headerOffset;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+          history.pushState(null, '', `#${id}`);
+        }
+      });
+
+      tocList.appendChild(link);
+    });
+
+    // ScrollSpy active highlight
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          document.querySelectorAll('.toc-link').forEach((item) => {
+            item.classList.toggle('active', item.getAttribute('href') === `#${id}`);
+          });
+        }
+      });
+    }, { rootMargin: '0px 0px -75% 0px' });
+
+    headings.forEach((h) => observer.observe(h));
+  });
 </script>
 
 <style>
-  /* ==========================================================
-     GREENISH THEME VARIABLES (Emerald / Mint Focus)
-  ========================================================== */
   :root {
-    --green-600: #059669;
-    --green-700: #047857;
-    --green-800: #065f46;
-    --green-50: #f0fdf4;
-    --green-100: #dcfce7;
-    --green-200: #bbf7d0;
-    
-    --text-main: #0f172a;
+    --green-primary: #059669;
+    --green-primary-hover: #047857;
+    --green-accent: #10b981;
+    --green-light: #f0fdf4;
+    --green-light-border: #bbf7d0;
+    --green-dark: #064e3b;
+    --text-heading: #0f172a;
     --text-body: #334155;
     --text-muted: #64748b;
-    --border-light: #e2e8f0;
-    --bg-card: #ffffff;
-    --bg-page: #fafbfc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f8fafc;
+    --border-color: #e2e8f0;
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   }
 
-  /* Progress Bar */
   .reading-progress-bar {
     position: fixed;
     top: 0;
     left: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #10b981, var(--green-600), var(--green-800));
+    height: 3.5px;
+    background: linear-gradient(90deg, #34d399, #059669, #047857);
     width: 0%;
     z-index: 9999;
-    transition: width 0.08s ease-out;
+    transition: width 0.05s ease-out;
   }
 
-  /* Container & Spacing Reductions */
   .blog-wrapper {
-    background-color: var(--bg-page);
+    background-color: var(--bg-surface);
     color: var(--text-body);
-    padding: 0.75rem 0 2rem; /* Reduced extra top/bottom space */
+    padding: 0.75rem 0 2.5rem;
   }
 
   .container {
     max-width: 1160px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 1.25rem;
   }
 
-  .breadcrumb-container {
-    margin-bottom: 0.75rem;
+  .breadcrumb-nav {
+    margin-bottom: 0.85rem;
     font-size: 0.82rem;
   }
 
-  /* Grid Layout: Main Article + Sticky Sidebar */
   .page-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 310px;
     gap: 2rem;
-    align-items: start; /* Essential for CSS sticky sidebar */
-  }
-
-  .content-col {
-    background: #ffffff;
-    border: 1px solid var(--border-light);
-    border-radius: 14px;
-    padding: 1.75rem 2rem;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+    align-items: start;
   }
 
   /* ==========================================================
-     ARTICLE HEADER & TITLE (Optimized Typography)
+     STICKY SIDEBAR IMPLEMENTATION
+  ========================================================== */
+  .sidebar-col {
+    position: relative;
+    width: 100%;
+  }
+
+  .sticky-sidebar {
+    position: sticky;
+    top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    max-height: calc(100vh - 2.5rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--green-light-border) transparent;
+  }
+
+  .sidebar-widget {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1.1rem;
+    box-shadow: var(--card-shadow);
+  }
+
+  .widget-header {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .widget-icon {
+    font-size: 1rem;
+  }
+
+  .widget-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-heading);
+  }
+
+  /* 1. Key Insights (TOC) */
+  .key-insights-widget {
+    border-top: 3px solid var(--green-primary);
+  }
+
+  .toc-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+
+  :global(.toc-link) {
+    font-size: 0.82rem;
+    color: #475569;
+    text-decoration: none;
+    line-height: 1.35;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    border-left: 2px solid transparent;
+    transition: all 0.15s ease;
+  }
+
+  :global(.toc-link:hover) {
+    background: var(--green-light);
+    color: var(--green-primary);
+  }
+
+  :global(.toc-link.active) {
+    background: var(--green-light);
+    color: var(--green-dark);
+    font-weight: 700;
+    border-left-color: var(--green-primary);
+  }
+
+  :global(.toc-heading) {
+    font-weight: 600;
+  }
+
+  :global(.toc-subheading) {
+    padding-left: 1.15rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  /* 2. Categories with Counts */
+  .clean-category-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .clean-category-list a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.45rem 0.6rem;
+    border-radius: 6px;
+    color: var(--text-body);
+    text-decoration: none;
+    font-size: 0.84rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+
+  .clean-category-list a:hover {
+    background: var(--green-light);
+    color: var(--green-primary);
+    padding-left: 0.75rem;
+  }
+
+  .cat-count {
+    background: var(--green-light);
+    color: var(--green-primary);
+    border: 1px solid var(--green-light-border);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 12px;
+  }
+
+  /* 3. You May Also Like Mini Cards */
+  .mini-post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mini-post-card {
+    display: flex;
+    gap: 0.65rem;
+    text-decoration: none;
+    align-items: center;
+    padding: 0.35rem;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+  }
+
+  .mini-post-card:hover {
+    background: var(--bg-subtle);
+  }
+
+  .mini-post-thumb {
+    width: 55px;
+    height: 55px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f1f5f9;
+  }
+
+  .mini-post-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .mini-post-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    overflow: hidden;
+  }
+
+  .mini-post-category {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--green-primary);
+    text-transform: uppercase;
+  }
+
+  .mini-post-title {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.3;
+    font-weight: 600;
+    color: var(--text-heading);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 0.15s ease;
+  }
+
+  .mini-post-card:hover .mini-post-title {
+    color: var(--green-primary);
+  }
+
+  /* ==========================================================
+     ARTICLE STYLING & HEADER
   ========================================================== */
   .article-header {
     margin-bottom: 1.25rem;
   }
 
-  .header-badges {
+  .header-pills {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.55rem;
+    margin-bottom: 0.65rem;
     flex-wrap: wrap;
-    margin-bottom: 0.6rem;
   }
 
   .category-badge {
-    background: var(--green-50);
-    color: var(--green-700);
-    border: 1px solid var(--green-200);
+    background: var(--green-light);
+    color: var(--green-primary);
+    border: 1px solid var(--green-light-border);
     font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     padding: 0.2rem 0.6rem;
-    border-radius: 6px;
+    border-radius: 16px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+
+  .category-badge:hover {
+    background: #dcfce7;
   }
 
   .read-time-pill,
@@ -393,70 +681,75 @@ const relatedPosts = allPosts
   }
 
   .article-title {
-    font-size: clamp(1.65rem, 2.7vw, 2.25rem); /* Balanced headline size */
+    font-size: clamp(1.8rem, 3.2vw, 2.45rem);
     font-weight: 800;
-    line-height: 1.25;
-    letter-spacing: -0.025em;
-    color: var(--text-main);
-    margin: 0.2rem 0 0.5rem 0;
+    line-height: 1.22;
+    letter-spacing: -0.022em;
+    color: var(--text-heading);
+    margin: 0 0 0.6rem 0;
   }
 
   .article-subtitle {
-    font-size: 1.02rem;
+    font-size: 1.05rem;
     line-height: 1.5;
     color: var(--text-muted);
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.9rem 0;
   }
 
-  /* Author Strip + Quick Share */
-  .article-meta-strip {
+  .article-meta-card {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.65rem 0;
-    border-top: 1px solid var(--border-light);
-    border-bottom: 1px solid var(--border-light);
-    gap: 0.75rem;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
     flex-wrap: wrap;
+    gap: 0.75rem;
   }
 
-  .author-inline {
+  .author-meta-info {
     display: flex;
     align-items: center;
     gap: 0.6rem;
   }
 
-  .author-avatar-sm {
-    width: 32px;
-    height: 32px;
+  .author-avatar-placeholder {
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: var(--green-50);
-    border: 1px solid var(--green-200);
-    color: var(--green-700);
+    background: linear-gradient(135deg, var(--green-primary), #047857);
+    color: #ffffff;
     font-weight: 700;
     display: grid;
     place-items: center;
-    overflow: hidden;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
 
-  .author-avatar-sm img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  .meta-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
   }
 
-  .byline {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-    display: block;
-    line-height: 1.1;
-  }
-
-  .author-name-text {
-    font-size: 0.85rem;
+  .author-name a,
+  .author-name {
     font-weight: 700;
-    color: var(--text-main);
+    color: var(--text-heading);
+    text-decoration: none;
+    font-size: 0.88rem;
+  }
+
+  .author-name a:hover {
+    color: var(--green-primary);
+  }
+
+  .date-info {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+  }
+
+  .date-info .dot {
+    margin: 0 0.2rem;
   }
 
   .quick-share {
@@ -465,22 +758,15 @@ const relatedPosts = allPosts
     gap: 0.35rem;
   }
 
-  .share-text {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    margin-right: 0.2rem;
-  }
-
   .share-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #f8fafc;
-    border: 1px solid var(--border-light);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-color);
     color: var(--text-muted);
     cursor: pointer;
     text-decoration: none;
@@ -489,9 +775,10 @@ const relatedPosts = allPosts
   }
 
   .share-btn:hover {
-    background: var(--green-600);
+    background: var(--green-primary);
     color: #ffffff;
-    border-color: var(--green-600);
+    border-color: var(--green-primary);
+    transform: translateY(-1px);
   }
 
   .tooltip {
@@ -508,27 +795,26 @@ const relatedPosts = allPosts
     pointer-events: none;
     transition: opacity 0.15s;
     white-space: nowrap;
-    z-index: 10;
   }
 
   .tooltip.visible {
     opacity: 1;
   }
 
-  /* Featured Image */
-  .featured-media-container {
+  .featured-media-box {
     margin: 0 0 1.5rem 0;
   }
 
-  .featured-media-container img {
+  .featured-media-box img {
     width: 100%;
     height: auto;
     border-radius: 10px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.04);
     display: block;
-    border: 1px solid var(--border-light);
+    object-fit: cover;
   }
 
-  .featured-media-container figcaption {
+  .featured-media-box figcaption {
     font-size: 0.78rem;
     color: var(--text-muted);
     text-align: center;
@@ -537,12 +823,13 @@ const relatedPosts = allPosts
   }
 
   /* ==========================================================
-     ENGAGING MARKDOWN BODY STYLING
+     BODY MARKDOWN TYPOGRAPHY
   ========================================================== */
   :global(.article-body) {
     font-size: 1.05rem;
     line-height: 1.75;
     color: var(--text-body);
+    word-break: break-word;
   }
 
   :global(.article-body p) {
@@ -550,76 +837,66 @@ const relatedPosts = allPosts
   }
 
   :global(.article-body h2) {
-    font-size: 1.45rem;
+    font-size: 1.48rem;
     font-weight: 800;
-    color: var(--text-main);
+    color: var(--text-heading);
     line-height: 1.3;
-    margin: 1.75rem 0 0.75rem;
+    margin: 1.85rem 0 0.75rem;
     padding-bottom: 0.35rem;
-    border-bottom: 2px solid var(--green-50);
+    border-bottom: 2px solid #f1f5f9;
     letter-spacing: -0.015em;
+    scroll-margin-top: 5.5rem;
   }
 
   :global(.article-body h3) {
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--text-main);
+    color: var(--text-heading);
     line-height: 1.35;
-    margin: 1.35rem 0 0.5rem;
+    margin: 1.35rem 0 0.55rem;
+    scroll-margin-top: 5.5rem;
   }
 
   :global(.article-body ul),
   :global(.article-body ol) {
-    margin: 0.85rem 0 1.15rem 1.2rem;
+    margin: 0.85rem 0 1.15rem 1.1rem;
     padding-left: 0.5rem;
   }
 
   :global(.article-body li) {
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.35rem;
   }
 
   :global(.article-body li::marker) {
-    color: var(--green-600);
+    color: var(--green-primary);
     font-weight: 700;
   }
 
   :global(.article-body blockquote) {
     margin: 1.35rem 0;
-    padding: 0.9rem 1.2rem;
-    background: var(--green-50);
-    border-left: 4px solid var(--green-600);
+    padding: 0.85rem 1.15rem;
+    background: var(--green-light);
+    border-left: 4px solid var(--green-primary);
     border-radius: 0 8px 8px 0;
     font-style: italic;
-    color: var(--green-800);
+    color: var(--green-dark);
     font-size: 1.02rem;
+    line-height: 1.6;
   }
 
   :global(.article-body blockquote p) {
-    margin: 0;
-  }
-
-  /* Custom Green Callout Boxes inside Markdown */
-  :global(.article-body .callout) {
-    background: var(--green-50);
-    border: 1px solid var(--green-200);
-    border-radius: 8px;
-    padding: 1rem 1.25rem;
-    margin: 1.25rem 0;
-  }
-
-  :global(.article-body .callout strong) {
-    color: var(--green-800);
+    margin-bottom: 0;
   }
 
   :global(.article-body a) {
-    color: var(--green-600);
+    color: var(--green-primary);
     text-decoration: underline;
     text-underline-offset: 3px;
     font-weight: 500;
   }
 
   :global(.article-body a:hover) {
-    color: var(--green-700);
+    color: var(--green-primary-hover);
   }
 
   :global(.article-body code:not(pre code)) {
@@ -627,38 +904,19 @@ const relatedPosts = allPosts
     color: #0f172a;
     padding: 0.15rem 0.35rem;
     border-radius: 4px;
-    font-size: 0.88em;
+    font-size: 0.86em;
     border: 1px solid #e2e8f0;
   }
 
   :global(.article-body pre) {
     background: #0f172a;
     color: #f8fafc;
-    padding: 1rem 1.25rem;
+    padding: 1rem 1.15rem;
     border-radius: 8px;
     overflow-x: auto;
     margin: 1.25rem 0;
     font-size: 0.88rem;
-  }
-
-  :global(.article-body table) {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1.35rem 0;
-    font-size: 0.9rem;
-  }
-
-  :global(.article-body th),
-  :global(.article-body td) {
-    padding: 0.55rem 0.75rem;
-    border: 1px solid var(--border-light);
-    text-align: left;
-  }
-
-  :global(.article-body th) {
-    background: var(--green-50);
-    color: var(--green-800);
-    font-weight: 700;
+    border: 1px solid #1e293b;
   }
 
   /* Tags */
@@ -672,51 +930,51 @@ const relatedPosts = allPosts
 
   .tags-label {
     font-weight: 700;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: var(--text-muted);
   }
 
   .tag-pill {
-    background: #f8fafc;
-    border: 1px solid var(--border-light);
-    padding: 0.2rem 0.55rem;
-    border-radius: 6px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-color);
+    padding: 0.2rem 0.6rem;
+    border-radius: 14px;
     font-size: 0.78rem;
-    color: var(--text-body);
+    color: #475569;
     text-decoration: none;
     font-weight: 500;
     transition: all 0.15s ease;
   }
 
   .tag-pill:hover {
-    background: var(--green-50);
-    color: var(--green-700);
-    border-color: var(--green-200);
+    background: var(--green-light);
+    color: var(--green-primary);
+    border-color: var(--green-light-border);
   }
 
   /* Share Card */
   .share-box {
-    margin: 1.5rem 0 1rem;
+    margin: 1.75rem 0 1.25rem;
     padding: 1.15rem 1.35rem;
-    background: linear-gradient(135deg, var(--green-50) 0%, #ffffff 100%);
-    border: 1px solid var(--green-200);
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    border: 1px solid var(--green-light-border);
     border-radius: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.85rem;
   }
 
   .share-box-content h4 {
-    margin: 0 0 0.15rem;
-    font-size: 0.95rem;
-    color: var(--text-main);
+    margin: 0 0 0.2rem;
+    font-size: 1rem;
+    color: var(--text-heading);
   }
 
   .share-box-content p {
     margin: 0;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: var(--text-muted);
   }
 
@@ -725,264 +983,44 @@ const relatedPosts = allPosts
     gap: 0.45rem;
   }
 
-  .btn-green-share {
+  .share-pill {
     padding: 0.4rem 0.85rem;
-    background: var(--green-600);
-    color: #fff;
     border-radius: 6px;
-    font-size: 0.78rem;
     font-weight: 600;
-    text-decoration: none;
-    transition: background 0.15s;
-  }
-
-  .btn-green-share:hover {
-    background: var(--green-700);
-  }
-
-  .btn-outline-share {
-    padding: 0.4rem 0.85rem;
-    background: #ffffff;
-    border: 1px solid var(--border-light);
-    color: var(--text-body);
-    border-radius: 6px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .btn-outline-share:hover {
-    border-color: var(--green-600);
-    color: var(--green-600);
-  }
-
-  /* ==========================================================
-     STICKY SIDEBAR WITH FOUNDER PROFILE
-  ========================================================== */
-  .sidebar-col {
-    position: relative;
-  }
-
-  .sticky-sidebar {
-    position: sticky;
-    top: 1.25rem; /* Sticks smoothly while scrolling */
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .sidebar-widget {
-    background: #ffffff;
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 1.15rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-  }
-
-  /* Author Card Widget */
-  .author-card-widget {
-    position: relative;
-    border-top: 3px solid var(--green-600);
-  }
-
-  .widget-badge {
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--green-700);
-    letter-spacing: 0.05em;
-    margin-bottom: 0.65rem;
-  }
-
-  .author-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.6rem;
-  }
-
-  .author-avatar-lg {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: var(--green-50);
-    border: 1.5px solid var(--green-200);
-    color: var(--green-700);
-    font-weight: 700;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    font-size: 1.15rem;
-    flex-shrink: 0;
-  }
-
-  .author-avatar-lg img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .author-title-name {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--text-main);
-    line-height: 1.2;
-  }
-
-  .founder-badge {
-    display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--green-700);
-    background: var(--green-50);
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-    margin-top: 0.2rem;
-  }
-
-  .author-bio-text {
     font-size: 0.8rem;
-    line-height: 1.45;
-    color: var(--text-body);
-    margin: 0.45rem 0 0.75rem;
-  }
-
-  .author-social-links {
-    display: flex;
-    gap: 0.4rem;
-    border-top: 1px solid var(--border-light);
-    padding-top: 0.65rem;
-  }
-
-  .social-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    background: #f8fafc;
-    border: 1px solid var(--border-light);
-    color: var(--text-muted);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     text-decoration: none;
     transition: all 0.15s ease;
   }
 
-  .social-icon:hover {
-    background: var(--green-600);
+  .share-green {
+    background: var(--green-primary);
     color: #ffffff;
-    border-color: var(--green-600);
   }
 
-  /* Explore Topics */
-  .widget-title {
-    margin: 0 0 0.5rem;
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--text-main);
+  .share-green:hover {
+    background: var(--green-primary-hover);
   }
 
-  .clean-category-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .clean-category-list a {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.4rem 0.55rem;
-    border-radius: 6px;
-    color: var(--text-body);
-    text-decoration: none;
-    font-size: 0.82rem;
-    font-weight: 500;
-    transition: all 0.15s ease;
-  }
-
-  .clean-category-list a:hover {
-    background: var(--green-50);
-    color: var(--green-700);
-    padding-left: 0.75rem;
-  }
-
-  .clean-category-list .arrow {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-  }
-
-  /* Newsletter */
-  .newsletter-widget {
-    background: linear-gradient(135deg, var(--green-50) 0%, #ffffff 100%);
-    border: 1px solid var(--green-200);
-  }
-
-  .widget-header {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 0.35rem;
-  }
-
-  .pulse-dot {
-    width: 7px;
-    height: 7px;
-    background: var(--green-600);
-    border-radius: 50%;
-    box-shadow: 0 0 0 2px var(--green-200);
-  }
-
-  .newsletter-widget p {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    margin: 0 0 0.65rem;
-    line-height: 1.4;
-  }
-
-  .mini-form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  .mini-form input {
-    padding: 0.45rem 0.65rem;
-    border-radius: 6px;
+  .share-outline {
+    background: #ffffff;
     border: 1px solid #cbd5e1;
-    font-size: 0.8rem;
-    outline: none;
+    color: var(--text-body);
   }
 
-  .mini-form input:focus {
-    border-color: var(--green-600);
+  .share-outline:hover {
+    border-color: var(--green-primary);
+    color: var(--green-primary);
   }
 
-  .mini-form button {
-    background: var(--green-600);
-    color: #ffffff;
-    font-weight: 600;
-    font-size: 0.8rem;
-    padding: 0.45rem;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    transition: background 0.15s;
+  .author-section {
+    margin-top: 1.5rem;
   }
 
-  .mini-form button:hover {
-    background: var(--green-700);
-  }
-
-  /* Related Posts */
+  /* Related Posts Grid */
   .related-posts {
-    margin-top: 1.75rem;
+    margin-top: 2rem;
     padding-top: 1.25rem;
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid var(--border-color);
   }
 
   .section-header {
@@ -995,14 +1033,14 @@ const relatedPosts = allPosts
   .section-header h2 {
     font-size: 1.15rem;
     font-weight: 700;
-    color: var(--text-main);
+    color: var(--text-heading);
     margin: 0;
   }
 
   .view-all-link {
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    color: var(--green-600);
+    color: var(--green-primary);
     text-decoration: none;
   }
 
@@ -1013,17 +1051,24 @@ const relatedPosts = allPosts
   }
 
   .modern-card {
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     overflow: hidden;
     background: #ffffff;
     display: flex;
     flex-direction: column;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .modern-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-color: var(--green-light-border);
   }
 
   .card-thumb img {
     width: 100%;
-    height: 105px;
+    height: 110px;
     object-fit: cover;
     display: block;
   }
@@ -1036,45 +1081,56 @@ const relatedPosts = allPosts
   }
 
   .card-category {
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    color: var(--green-600);
+    color: var(--green-primary);
     text-transform: uppercase;
-    margin-bottom: 0.15rem;
+    margin-bottom: 0.2rem;
   }
 
   .card-title {
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     line-height: 1.3;
     font-weight: 600;
-    margin: 0 0 0.35rem;
+    margin: 0 0 0.4rem;
   }
 
   .card-title a {
-    color: var(--text-main);
+    color: var(--text-heading);
     text-decoration: none;
   }
 
+  .card-title a:hover {
+    color: var(--green-primary);
+  }
+
   .card-date {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     color: var(--text-muted);
     margin-top: auto;
   }
 
-  /* Responsive Adjustments */
+  /* Responsive Queries */
   @media (max-width: 960px) {
     .page-layout {
       grid-template-columns: 1fr;
-      gap: 1.5rem;
-    }
-    .content-col {
-      padding: 1.25rem 1rem;
+      gap: 1.75rem;
     }
     .sticky-sidebar {
       position: static;
+      max-height: none;
     }
     .post-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .post-grid {
       grid-template-columns: 1fr;
+    }
+    .article-title {
+      font-size: 1.75rem;
     }
   }
 </style>
