@@ -6,7 +6,7 @@
 // src/content/config.ts) and a page at /blog/post-name appears on the next
 // build — no other code changes required.
 import { getCollection, type CollectionEntry } from 'astro:content';
-import PostLayout from '../../layouts/PostLayout.astro';
+import PostLayout from '../sam/../sam/layouts/PostLayout.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
