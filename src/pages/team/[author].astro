@@ -5,9 +5,9 @@
 // e.g. /team/asha-fenn. Add a new writer by adding an entry to that file;
 // no other code changes are needed.
 import { getCollection } from 'astro:content';
-import BaseLayout from '../sam/../sam/layouts/BaseLayout.astro';
-import Breadcrumb from '../sam/../sam/components/Breadcrumb.astro';
-import { authors, type Author } from '../sam/../sam/data/authors';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import { authors, type Author } from '../../data/authors';
 
 export async function getStaticPaths() {
   return authors.map((author) => ({

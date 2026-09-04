@@ -2,10 +2,10 @@
 // src/layouts/PostLayout.astro
 import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
-import Breadcrumb from '../sam/components/Breadcrumb.astro';
-import AdSlot from '../sam/components/AdSlot.astro';
-import AuthorBio from '../sam/components/AuthorBio.astro';
-import { getAuthorBySlug } from '../sam/data/authors';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import AdSlot from '../components/AdSlot.astro';
+import AuthorBio from '../components/AuthorBio.astro';
+import { getAuthorBySlug } from '../data/authors';
 
 export interface Props {
   post: CollectionEntry<'blog'>;
