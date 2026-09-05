@@ -1,4 +1,3 @@
-```markdown
 ---
 title: "The Ultimate Guide to Couple Property Purchase Decisions in 2026"
 description: "Master joint property buying in 2026. Discover the 5 costly mistakes couples make, the 50-month salary rule, and how to make confident home decisions."
