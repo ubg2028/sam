@@ -6,7 +6,7 @@ updatedDate: 2026-09-05
 authorSlug: "samrat"
 category: "Mindset & Growth"
 tags: ["Decision Making", "Mindset", "Career Growth", "Personal Development", "Resilience"]
-image: "/sam/images/blog/delayed-courage-framework.jpg"
+image: "/sam/images/posts/delayed-courage-framework.jpg"
 imageAlt: "The Delayed Courage Framework Guide"
 draft: false
 ---
