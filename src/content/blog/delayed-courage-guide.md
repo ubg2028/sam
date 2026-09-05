@@ -6,7 +6,7 @@ updatedDate: 2026-09-04
 authorSlug: "samrat"
 category: "Growth"
 tags: ["Mindset", "Personal Growth", "Career Strategy", "Resilience"]
-image: "/sam/images/blog/delayed-courage-guide.jpg"
+image: "/sam/images/posts/delayed-courage-guide.jpg"
 imageAlt: "Overcoming Missed Opportunities and Turning Regret into Growth"
 draft: false
 ---
