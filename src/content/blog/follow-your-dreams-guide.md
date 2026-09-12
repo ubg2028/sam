@@ -1,7 +1,7 @@
 ---
 title: "How to Follow Your Dreams: Stop Asking for Permission"
 description: "Learn how to follow your dreams at any age without waiting for approval. Silence critics, build real proof, and turn your boldest ideas into reality."
-pubDate: 2026-03-15
+pubDate: 2026-09-12
 updatedDate:
 author: "john-doe"
 coverImage: "/images/posts/follow-your-dreams-guide.jpg"
